@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CastLens — Free Online Screen Recorder · No Upload</title>
-<meta name="description" content="Record your screen, a window, or a browser tab for free — right in your browser. MP4 output, microphone & system audio, no upload, no signup.">
+<title>CastLens — The Free Online Screen Recorder That Feels Pro</title>
+<meta name="description" content="Region capture, webcam picture-in-picture, one-tap trim, MP4 export — a pro-grade screen recorder that lives in a tab. No install, no signup, nothing uploaded.">
 <link rel="canonical" href="https://castlens.kuige.me/">
 <link rel="alternate" hreflang="en" href="https://castlens.kuige.me/">
 <link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/?lang=zh">
 <link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CastLens">
-<meta property="og:title" content="CastLens — Free Online Screen Recorder · No Upload">
-<meta property="og:description" content="Record your screen, a window, or a browser tab for free — right in your browser. MP4 output, microphone & system audio, no upload, no signup.">
+<meta property="og:title" content="CastLens — The Free Online Screen Recorder That Feels Pro">
+<meta property="og:description" content="Region capture, webcam PiP, one-tap trim, MP4 export — everything the desktop pros charge for, in a tab. Nothing installs, nothing uploads.">
 <meta property="og:url" content="https://castlens.kuige.me/">
 <meta property="og:image" content="https://castlens.kuige.me/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CastLens — Free Online Screen Recorder · No Upload">
-<meta name="twitter:description" content="Record your screen, a window, or a browser tab for free — right in your browser. MP4 output, microphone & system audio, no upload, no signup.">
+<meta name="twitter:title" content="CastLens — The Free Online Screen Recorder That Feels Pro">
+<meta name="twitter:description" content="Region capture, webcam PiP, one-tap trim, MP4 export — in a tab. Nothing installs, nothing uploads.">
 <meta name="twitter:image" content="https://castlens.kuige.me/og-image.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3Crect x='24' y='48' width='16' height='3' rx='1.5' fill='%23a89a8c'/%3E%3C/svg%3E">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"CastLens","url":"https://castlens.kuige.me/","applicationCategory":"MultimediaApplication","operatingSystem":"Any desktop browser","description":"Free online screen recorder that runs entirely in your browser. Records a screen, an app window or a browser tab, mixes microphone and system audio, and saves MP4 (or WebM) straight to your device. Nothing is uploaded.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Record screen, window or browser tab","MP4 output on Chrome 126+ / Edge / Safari","Microphone and system audio mixing","Pause and resume with 3-second countdown","Files never leave your device"],"inLanguage":["en","zh"]}
+{"@context":"https://schema.org","@type":"WebApplication","name":"CastLens","url":"https://castlens.kuige.me/","applicationCategory":"MultimediaApplication","operatingSystem":"Any desktop browser","description":"A pro-grade online screen recorder that lives in a tab: region capture with a floating always-on-top console, webcam picture-in-picture, pause & resume, one-tap trim, MP4/WebM export. No install, no signup — nothing is ever uploaded.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Record screen, window or browser tab","MP4 output on Chrome 126+ / Edge / Safari","Microphone and system audio mixing","Pause and resume with 3-second countdown","Files never leave your device"],"inLanguage":["en","zh"]}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
@@ -167,8 +167,12 @@ footer .cn{margin-bottom:6px}
 /* toast */
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:11px;font-size:14px;max-width:min(92vw,560px);z-index:120;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 /* countdown overlay */
-#cd{position:fixed;inset:0;background:rgba(10,8,6,.72);z-index:110;display:flex;align-items:center;justify-content:center}
-#cdNum{font-size:120px;font-weight:800;color:#fff;text-shadow:0 0 40px var(--accent)}
+#cd{position:fixed;inset:0;background:rgba(10,8,6,.62);backdrop-filter:blur(8px);z-index:110;display:flex;align-items:center;justify-content:center}
+#cdWrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+#cdNum{width:148px;height:148px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:74px;font-weight:800;color:var(--accent);background:var(--card);border:1px solid var(--line);box-shadow:0 0 0 14px rgba(224,106,69,.08),0 0 0 30px rgba(224,106,69,.04),0 24px 60px rgba(0,0,0,.35)}
+#cdNum.zoom{animation:cdzoom .72s cubic-bezier(.2,.8,.3,1)}
+@keyframes cdzoom{from{transform:scale(1.22);opacity:.15}to{transform:scale(1);opacity:1}}
+#cdLab{color:var(--ink);font-size:14px;letter-spacing:3px;font-weight:600;opacity:.85}
 /* funnel */
 .mxf{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.22);padding:16px 44px 16px 18px;max-width:min(92vw,430px);z-index:130}
 .mxf-x{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--mut);font-size:18px;cursor:pointer;line-height:1}
@@ -335,7 +339,7 @@ footer .cn{margin-bottom:6px}
 </footer>
 
 <div id="toast" hidden></div>
-<div id="cd" hidden><div id="cdNum">3</div></div>
+<div id="cd" hidden><div id="cdWrap"><div id="cdNum">3</div><div id="cdLab" data-i18n="cdLab">Get ready</div></div></div>
 
 <div id="mxFunnel" class="mxf" hidden>
   <button class="mxf-x" id="mxFX" aria-label="Close">×</button>
@@ -375,9 +379,9 @@ footer .cn{margin-bottom:6px}
 const L = {
   en: {
     navHow:'How it works', navFaq:'FAQ',
-    b1:'No upload', b2:'No signup', b3:'Free to use',
-    h1:'Free Online Screen Recorder',
-    sub:'Record your screen, an app window, or a browser tab — right in your browser. The video never leaves your device.',
+    b1:'Region · Webcam · Trim', b2:'No upload', b3:'No signup · No watermark',
+    h1:'The Online Screen Recorder That Feels Pro',
+    sub:'Region capture, webcam picture-in-picture, pause & resume, one-tap trim, MP4 export — everything the desktop pros charge for, in a browser tab. Nothing installs. Nothing uploads. Possibly the world\'s second-best screen recorder — definitely the best one that opens in one click.',
     unsupported:"Your browser doesn't support screen recording. Please use desktop Chrome, Edge, Safari, or Firefox.",
     micLabel:'Microphone', sysLabel:'System audio', cdLabel:'3s countdown',
     btnRecord:'Record', btnPause:'Pause', btnResume:'Resume', btnStop:'Stop',
@@ -406,6 +410,7 @@ const L = {
     trimExporting:'Exporting', trimDone:'Trimmed video downloaded',
     trimErr:'Trim export failed — downloaded the original instead.',
     pipHint:'After stopping, switch back to the CastLens tab to preview & download.',
+    cdLab:'Get ready',
     pipDone:'Recording complete', pipView:'View & download', pipCloseBtn:'Close',
     diagCopied:'Diagnostics copied — just paste it to support.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
@@ -435,14 +440,14 @@ const L = {
     q3:'Can I record system audio on macOS?', a3:'Yes on Chrome 141 or newer with macOS 14.2+. On older versions, macOS only allows tab audio — share a Chrome tab and its sound will be captured. Windows supports system audio.',
     q4:'Will I get an MP4 file?', a4:'On Chrome 126+, Edge, and Safari the recording is saved as MP4 (H.264), ready for any platform. Firefox saves WebM — most platforms accept it, or convert it to MP4 afterwards.',
     q5:'Which browsers and devices are supported?', a5:'Desktop Chrome, Edge, Brave, Safari 16+, and Firefox. Mobile browsers don\'t allow screen sharing, so CastLens needs a desktop browser.',
-    title:'CastLens — Free Online Screen Recorder · No Upload',
-    desc:'Record your screen, a window, or a browser tab for free — right in your browser. MP4 output, microphone & system audio, no upload, no signup.',
+    title:'CastLens — The Free Online Screen Recorder That Feels Pro',
+    desc:'Region capture, webcam picture-in-picture, one-tap trim, MP4 export — a pro-grade screen recorder that lives in a tab. No install, no signup, nothing uploaded.',
   },
   zh: {
     navHow:'使用方法', navFaq:'常见问题',
-    b1:'视频不上传', b2:'免注册', b3:'免费使用',
-    h1:'免费在线录屏工具',
-    sub:'在浏览器里直接录制整个屏幕、应用窗口或标签页，视频始终留在你的设备上。',
+    b1:'区域·画中画·裁剪', b2:'视频不上传', b3:'免注册·无水印',
+    h1:'免费在线录屏，好用得不像网页版',
+    sub:'区域框选、摄像头画中画、暂停续录、一键裁剪、MP4 导出——桌面付费工具的本事，一个标签页全干了。不装软件，不上传云端。可能是世界第二好用的录屏工具——但一点开就能用的那个，就是它。',
     unsupported:'当前浏览器不支持屏幕录制，请使用桌面版 Chrome / Edge / Safari / Firefox。',
     micLabel:'麦克风', sysLabel:'系统声音', cdLabel:'3 秒倒计时',
     btnRecord:'开始录制', btnPause:'暂停', btnResume:'继续', btnStop:'停止',
@@ -471,6 +476,7 @@ const L = {
     trimExporting:'导出中', trimDone:'裁剪版已下载',
     trimErr:'裁剪导出失败，已改为下载原片。',
     pipHint:'停止后切回 CastLens 标签页预览并下载视频。',
+    cdLab:'准备开录',
     pipDone:'录制完成', pipView:'查看并下载', pipCloseBtn:'关闭',
     diagCopied:'诊断信息已复制，直接粘贴给支持即可。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
@@ -500,8 +506,8 @@ const L = {
     q3:'macOS 上能录系统声音吗？', a3:'可以，需要 Chrome 141 及以上且 macOS 14.2+。旧版本 macOS 只允许标签页声音——共享一个 Chrome 标签页即可录到它的声音。Windows 支持系统声音。',
     q4:'能得到 MP4 文件吗？', a4:'Chrome 126+、Edge、Safari 会直接保存为 MP4（H.264），任何平台都能用；Firefox 保存为 WebM，多数平台也接受，或事后转成 MP4。',
     q5:'支持哪些浏览器和设备？', a5:'桌面版 Chrome、Edge、Brave、Safari 16+、Firefox。手机浏览器不支持屏幕共享，因此需要桌面浏览器。',
-    title:'CastLens — 免费在线录屏工具 · 视频不上传',
-    desc:'免费在线录屏：整屏、窗口或标签页，浏览器直接录成 MP4，支持麦克风与系统声音，视频不上传、免注册。',
+    title:'CastLens — 免费在线录屏 · 区域·画中画·裁剪·不上传',
+    desc:'区域录制、摄像头画中画、暂停续录、一键裁剪、MP4 导出——专业录屏能力，浏览器直接用。免安装免注册，视频不上传。',
   }
 };
 const $ = id => document.getElementById(id);
@@ -632,7 +638,7 @@ function cleanupStreams(){
   for (const st of [S.screen, S.mic, S.cam]) if (st) st.getTracks().forEach(t => t.stop());
   if (S.actx) { try{ S.actx.close(); }catch(e){} }
   if (S.pipWin){
-    if (pipEls && S.finalDur > 0) buildPipDone(S.pipWin, S.finalDur);
+    if (pipEls && S.finalDur > 0) S._pipDone = { pw: S.pipWin, dur: S.finalDur };
     else { try{ S.pipWin.close(); }catch(e){} }
     S.pipWin = null;
   }
@@ -838,12 +844,16 @@ function buildPipRecorderPanel(lay){
     d.body.innerHTML = '';
     d.title = 'CastLens';
     const st = d.createElement('style');
-    st.textContent = `body{margin:0;background:#141210;color:#f0e8dd;font-family:-apple-system,'PingFang SC',sans-serif;user-select:none}
+    st.textContent = `body{margin:0;background:#141210;color:#f0e8dd;font-family:-apple-system,'PingFang SC',sans-serif;user-select:none;overflow:hidden}
 .st{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px;font-size:12.5px;color:#cfc6bb}
 .rec{color:#ff4d4f;font-weight:700}
 .rec i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff4d4f;margin-right:6px;animation:pulse 1.1s infinite}
 @keyframes pulse{50%{opacity:.25}}
+.pvw{position:relative;margin:0 12px}
 #pv{display:block;width:100%;background:#000;border-radius:8px}
+.cdn{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:#fff;text-shadow:0 2px 28px rgba(0,0,0,.7);pointer-events:none}
+.cdn.pop{animation:cdpop .68s ease}
+@keyframes cdpop{from{transform:scale(1.6);opacity:0}to{transform:scale(1);opacity:1}}
 #tm{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.5px}
 .row{display:flex;gap:8px;align-items:center;padding:8px 12px 4px}
 .row button{border:none;border-radius:10px;padding:9px 0;font-size:13px;cursor:pointer;color:#fff;background:#3a332d;flex:1;transition:.15s}
@@ -859,15 +869,21 @@ function buildPipRecorderPanel(lay){
     status.append(stat, tm);
     const prev = d.createElement('canvas'); prev.id = 'pv';
     prev.width = 446; prev.height = ph;
+    const pvw = d.createElement('div'); pvw.className = 'pvw';
+    const cdn = d.createElement('div'); cdn.className = 'cdn'; cdn.style.display = 'none';
+    pvw.append(prev, cdn);
     const row = d.createElement('div'); row.className = 'row';
     const bPause = d.createElement('button'); bPause.textContent = L[LANG].btnPause;
     const bStop = d.createElement('button'); bStop.className = 'g2'; bStop.textContent = L[LANG].btnStop;
     row.append(bPause, bStop);
     const hint = d.createElement('div'); hint.className = 'hint'; hint.textContent = L[LANG].pipHint;
-    d.body.append(status, prev, row, hint);
+    d.body.append(status, pvw, row, hint);
     bPause.onclick = () => { pauseResume(); };
-    bStop.onclick = () => stopRecording();
-    pipEls = { stat, tm, prev, prevCtx: prev.getContext('2d'), pause: bPause };
+    bStop.onclick = () => { try{ window.focus(); }catch(e){} stopRecording(); };
+    const fitWin = () => { try{ pw.resizeTo(474, Math.min(640, Math.max(380, d.body.scrollHeight + 52))); }catch(e){} };
+    fitWin();
+    try{ (pw.requestAnimationFrame || (f => setTimeout(f, 30)))(fitWin); }catch(e){}
+    pipEls = { stat, tm, prev, prevCtx: prev.getContext('2d'), pause: bPause, cdn };
     pw.addEventListener('pagehide', () => { pipEls = null; S.pipWin = null; }, { once: true });
     dlog('pip-panel');
   } catch(e){ dlog('pip-panel-err', e && e.message); }
@@ -911,6 +927,7 @@ function updatePipPanel(){
     if (s === 'recording'){ pipEls.stat.innerHTML = '<i></i>' + L[LANG].stRec; pipEls.stat.className = 'rec'; }
     else if (s === 'paused'){ pipEls.stat.textContent = '‖ ' + L[LANG].stPause; pipEls.stat.className = ''; }
     else if (s === 'countdown'){ pipEls.stat.textContent = pipEls._cd || ''; pipEls.stat.className = 'rec'; }
+    if (pipEls.cdn && s !== 'countdown') pipEls.cdn.style.display = 'none';
     pipEls.pause.textContent = s === 'paused' ? L[LANG].btnResume : L[LANG].btnPause;
     if (S.cv && pipEls.prev.width){
       const c = pipEls.prevCtx, W2 = pipEls.prev.width, H2 = pipEls.prev.height;
@@ -1186,7 +1203,12 @@ async function startFlow(){
       const seq = S.layout ? [5,4,3,2,1] : [3,2,1];
       for (const n of seq){
         num.textContent = n;
-        if (pipEls){ pipEls.stat.textContent = String(n); pipEls.stat.className = 'rec'; pipEls._cd = String(n); }
+        num.classList.remove('zoom'); void num.offsetWidth; num.classList.add('zoom');
+        if (pipEls){
+          pipEls.stat.textContent = String(n); pipEls.stat.className = 'rec'; pipEls._cd = String(n);
+          if (pipEls.cdn){ pipEls.cdn.style.display = 'flex'; pipEls.cdn.textContent = String(n);
+            pipEls.cdn.classList.remove('pop'); void pipEls.cdn.offsetWidth; pipEls.cdn.classList.add('pop'); }
+        }
         await new Promise(r => setTimeout(r, S.layout ? 700 : 800));
       }
       ov.hidden = true;
@@ -1237,11 +1259,22 @@ function finalize(){
   els.meta.textContent = `${fmtDur(S.finalDur)} · ${fmtBytes(blob.size)} · ${S.mime.label}`;
   els.timer.textContent = fmtDur(S.finalDur);
   setupTrim();
+  const pd = S._pipDone; S._pipDone = null;
+  if (pd){
+    setTimeout(() => {
+      try {
+        if (pd.pw.closed) return;
+        if (document.visibilityState === 'visible'){ pd.pw.close(); }
+        else buildPipDone(pd.pw, pd.dur);
+      } catch(e){ try{ pd.pw.close(); }catch(_){} }
+    }, 400);
+  }
   try{ window.mxFunnel && window.mxFunnel(); }catch(e){}
 }
 
 function discard(){
   if (S.pipWin){ try{ S.pipWin.close(); }catch(e){} S.pipWin = null; pipEls = null; }
+  S._pipDone = null;
   $('trimBox').hidden = true; $('btnFull').hidden = true;
   if (S.url){ URL.revokeObjectURL(S.url); S.url = null; }
   els.preview.removeAttribute('src'); els.preview.load();
