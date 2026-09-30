@@ -657,7 +657,7 @@ function openPipWindow(){
   return (async () => {
     if (!window.documentPictureInPicture) return null;
     try {
-      const w = await documentPictureInPicture.requestWindow({ width: 470, height: 470 });
+      const w = await documentPictureInPicture.requestWindow({ width: 520, height: 620 });
       try { w.document.body.style.background = '#141210'; } catch(e){}
       return w;
     }
@@ -734,10 +734,13 @@ button.g:hover{border-color:#e06a45;color:#e06a45}`;
     const preset = ar => { let w = VW, h = w / ar; if (h > VH){ h = VH; w = h * ar; } clampSel((VW - w)/2, (VH - h)/2, w, h); };
     const fit = () => {
       VW = v.videoWidth || 1280; VH = v.videoHeight || 720;
-      k = Math.min(Math.min(440, pw.innerWidth - 16) / VW, 320 / VH);
+      k = Math.min(Math.min(470, pw.innerWidth - 20) / VW, 340 / VH);
       cv.width = Math.round(VW * k); cv.height = Math.round(VH * k);
       cv.style.width = cv.width + 'px';
       if (!R) clampSel(0, 0, VW, VH); else clampSel(R.x, R.y, R.w, R.h);
+      const fitWin = () => { try{ pw.resizeTo(Math.max(520, cv.width + 44), Math.min(780, Math.max(600, d.body.scrollHeight + 92))); }catch(e){} };
+      fitWin();
+      try{ (pw.requestAnimationFrame || (f => setTimeout(f, 30)))(fitWin); }catch(e){}
     };
     const rel = e => { const b = cv.getBoundingClientRect(); return { x: (e.clientX - b.left) / k, y: (e.clientY - b.top) / k }; };
     const CURS = { n:'ns-resize', s:'ns-resize', e:'ew-resize', w:'ew-resize', ne:'nesw-resize', sw:'nesw-resize', nw:'nwse-resize', se:'nwse-resize' };
@@ -869,7 +872,7 @@ function buildPipRecorderPanel(lay){
 .hint{font-size:11px;color:#8f8275;padding:3px 14px 12px;line-height:1.4}`;
     d.head.appendChild(st);
     const ph = Math.min(240, Math.max(70, Math.round(446 * lay.sh / Math.max(1, lay.sw))));
-    try { pw.resizeTo(474, ph + 168); } catch(e){}
+    try { pw.resizeTo(500, ph + 210); } catch(e){}
     const status = d.createElement('div'); status.className = 'st';
     const stat = d.createElement('span'); const tm = d.createElement('span'); tm.id = 'tm'; tm.textContent = '00:00';
     status.append(stat, tm);
@@ -886,7 +889,7 @@ function buildPipRecorderPanel(lay){
     d.body.append(status, pvw, row, hint);
     bPause.onclick = () => { pauseResume(); };
     bStop.onclick = () => { try{ window.focus(); }catch(e){} stopRecording(); };
-    const fitWin = () => { try{ pw.resizeTo(474, Math.min(640, Math.max(380, d.body.scrollHeight + 52))); }catch(e){} };
+    const fitWin = () => { try{ pw.resizeTo(500, Math.min(720, Math.max(400, d.body.scrollHeight + 96))); }catch(e){} };
     fitWin();
     try{ (pw.requestAnimationFrame || (f => setTimeout(f, 30)))(fitWin); }catch(e){}
     pipEls = { stat, tm, prev, prevCtx: prev.getContext('2d'), pause: bPause, cdn };
@@ -919,7 +922,7 @@ button.g:hover{border-color:#e06a45;color:#e06a45}`;
     b2.onclick = () => { try{ pw.close(); }catch(e){} };
     box.append(ok, t1, t2, b1, b2);
     d.body.appendChild(box);
-    try { pw.resizeTo(474, 300); } catch(e){}
+    try { pw.resizeTo(500, 350); } catch(e){}
     try { window.focus(); }catch(e){}
     dlog('pip-done');
   } catch(e){ try{ pw.close(); }catch(_){} }
