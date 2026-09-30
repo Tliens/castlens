@@ -219,26 +219,25 @@ footer .cn{margin-bottom:6px}
   <section id="tool" class="panel card" aria-label="Recorder">
     <div id="unsupported" hidden style="text-align:center;color:var(--accent);font-size:15px;padding:12px 0" data-i18n="unsupported">Your browser doesn't support screen recording. Please use desktop Chrome, Edge, Safari, or Firefox.</div>
 
-    <div class="opts">
+    <div class="opts" id="optsRow">
       <label class="sw"><input type="checkbox" id="optMic"><span class="sw-t"></span><span data-i18n="micLabel">Microphone</span></label>
       <label class="sw"><input type="checkbox" id="optSys" checked><span class="sw-t"></span><span data-i18n="sysLabel">System audio</span></label>
       <label class="sw"><input type="checkbox" id="optCd" checked><span class="sw-t"></span><span data-i18n="cdLabel">3s countdown</span></label>
-      <label class="sw"><input type="checkbox" id="optRegion"><span class="sw-t"></span><span data-i18n="regionLabel">Region</span></label>
       <label class="sw"><input type="checkbox" id="optCam"><span class="sw-t"></span><span data-i18n="camLabel">Webcam</span></label>
       <span class="fmt" id="fmtBadge">MP4</span>
     </div>
 
-    <div class="ctl">
+    <div class="ctl" id="ctlRow">
       <button class="btn rec" id="btnRecord"><span class="dot"></span><span data-i18n="btnRecord">Record</span></button>
       <button class="btn ghost" id="btnPause" hidden data-i18n="btnPause">Pause</button>
       <button class="btn stop" id="btnStop" hidden><span class="dot live"></span><span data-i18n="btnStop">Stop</span></button>
     </div>
-    <div class="stat">
+    <div class="stat" id="statRow">
       <span id="timer">00:00</span>
       <span id="stLabel" data-i18n="stIdle">Ready</span>
     </div>
     <p class="hint" id="hint" data-i18n="hintIdle">Click Record — you'll pick a screen, window, or tab in the browser prompt.</p>
-    <div class="diagrow"><button id="diagBtn" class="diagbtn" data-i18n="btnPermDiag">Copy diagnostics</button></div>
+    <div class="diagrow" id="diagRow"><button id="diagBtn" class="diagbtn" data-i18n="btnPermDiag">Copy diagnostics</button></div>
 
     <div id="permCard" class="pcm" hidden>
       <div class="pcm-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle">
@@ -386,11 +385,11 @@ const L = {
     micLabel:'Microphone', sysLabel:'System audio', cdLabel:'3s countdown',
     btnRecord:'Record', btnPause:'Pause', btnResume:'Resume', btnStop:'Stop',
     stIdle:'Ready', stRec:'Recording', stPause:'Paused', stCount:'Get ready',
-    hintIdle:'Click Record — you\'ll pick a screen, window, or tab in the browser prompt.',
+    hintIdle:'Click Record, pick a screen / window / tab, then draw the area in the floating mini window.',
     hintRec:'Recording — keep this tab open and switch to whatever you want to capture.',
     hintPause:'Paused. Resume or stop whenever you\'re ready.',
     hintReview:'Preview your recording, then download it or discard and try again.',
-    rvDownload:'Download', rvDiscard:'Discard & re-record',
+    rvDownload:'Download', rvDiscard:'Re-record',
     toastCancel:'Screen capture was cancelled — nothing recorded.',
     toastMicFail:'Microphone unavailable — recording without mic.',
     toastNoSys:'System audio wasn\'t returned by the browser (macOS needs Chrome 141+). Sharing a tab still captures its audio.',
@@ -452,11 +451,11 @@ const L = {
     micLabel:'麦克风', sysLabel:'系统声音', cdLabel:'3 秒倒计时',
     btnRecord:'开始录制', btnPause:'暂停', btnResume:'继续', btnStop:'停止',
     stIdle:'待命', stRec:'录制中', stPause:'已暂停', stCount:'准备',
-    hintIdle:'点击开始录制，随后在浏览器弹窗里选择要录的屏幕、窗口或标签页。',
+    hintIdle:'点击开始录制，选择屏幕/窗口/标签页后，在悬浮小窗中框选录制区域。',
     hintRec:'录制中——保持本页开启，随便切到任何想录的内容。',
     hintPause:'已暂停，随时继续或停止。',
     hintReview:'先预览，满意就下载，不满意可丢弃重录。',
-    rvDownload:'下载', rvDiscard:'丢弃，重新录',
+    rvDownload:'下载', rvDiscard:'重新录制',
     toastCancel:'已取消屏幕选择，未录制任何内容。',
     toastMicFail:'麦克风不可用，将以无麦克风方式录制。',
     toastNoSys:'浏览器未返回系统声音（macOS 需 Chrome 141+）。共享标签页时仍会带上标签页声音。',
@@ -599,7 +598,14 @@ const els = { rec:$('btnRecord'), pause:$('btnPause'), stop:$('btnStop'), timer:
 
 function setState(st){
   S.state = st;
-  els.rec.hidden = (st === 'countdown' || st === 'recording' || st === 'paused' || st === 'layout');
+  const busy = (st === 'countdown' || st === 'recording' || st === 'paused' || st === 'layout');
+  const inReview = (st === 'review');
+  $('optsRow').hidden = busy || inReview;
+  $('diagRow').hidden = busy || inReview;
+  $('hint').hidden = busy || inReview;
+  $('ctlRow').hidden = inReview;
+  $('statRow').hidden = inReview;
+  els.rec.hidden = busy || inReview;
   els.pause.hidden = !(st === 'recording' || st === 'paused');
   els.stop.hidden = !(st === 'recording' || st === 'paused');
   els.review.hidden = (st !== 'review');
@@ -1107,7 +1113,7 @@ async function startFlow(){
     }
     let audioToastShown = false;
     els.st.textContent = L[LANG].stPicking;
-    const wantLayout = $('optRegion').checked || $('optCam').checked;
+    const wantLayout = true;   // region capture is always on
     let ctrl = null;
     const gdm = async o => {
       ctrl = (wantLayout && window.CaptureController) ? new CaptureController() : null;
@@ -1147,7 +1153,7 @@ async function startFlow(){
       if (S.state === 'recording' || S.state === 'paused'){ S.stopReason = 'track-ended'; stopRecording(); }
     });
 
-    if ($('optRegion').checked || $('optCam').checked){
+    {
       if ($('optCam').checked){
         try { S.cam = await navigator.mediaDevices.getUserMedia({ video:{ width:{ ideal:640 } }, facingMode:'user' }); dlog('cam-ok'); }
         catch(e){ dlog('cam-fail', e && e.name); toast(L[LANG].toastCamFail); }
@@ -1245,7 +1251,7 @@ function finalize(){
   dlog('finalize', { reason: S.stopReason || 'user', size: blob.size, dur: Math.round(S.finalDur * 10) / 10 });
   if (!blob.size){
     if (S.stopReason === 'error') toast(L[LANG].toastRecErr);
-    else { toast(L[LANG].toastEmpty); showPermCard(); }
+    else if (S.finalDur > 1){ toast(L[LANG].toastEmpty); showPermCard(); }
     S.chunks = []; setState('idle'); return;
   }
   if (S.stopReason === 'track-ended' && S.finalDur < 1.5){ toast(L[LANG].toastEarly); showPermCard(); }
