@@ -331,6 +331,7 @@ const L = {
     toastNoSys:'System audio wasn\'t returned by the browser (macOS needs Chrome 141+). Sharing a tab still captures its audio.',
     toastEmbed:'Screen capture isn\'t available in this browser or embedded webview (e.g. an in-app browser). Open CastLens in a standalone Chrome, Edge, or Safari window.',
     toastRecErr:'Recording hit an error and stopped. Try again — if it keeps happening, reload the page.',
+    toastFbWebm:'The MP4 recorder failed to start on this browser — switched to WebM automatically, recording continues.',
     toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
     toastEarly:'The capture was cut off by the system right after it started. If this repeats, allow Screen Recording for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then restart it.',
     toastAudioRetry:'Capturing with system audio failed — restarted the capture without audio. Uncheck "System audio" beforehand to skip this.',
@@ -386,6 +387,7 @@ const L = {
     toastNoSys:'浏览器未返回系统声音（macOS 需 Chrome 141+）。共享标签页时仍会带上标签页声音。',
     toastEmbed:'当前环境不支持屏幕捕获（比如应用内置浏览器）。请用独立的 Chrome / Edge / Safari 窗口打开 CastLens 再录。',
     toastRecErr:'录制出现错误已停止，请重试；若反复出现请刷新页面。',
+    toastFbWebm:'此浏览器的 MP4 录制器启动失败——已自动切换为 WebM，录制继续。',
     toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
     toastEarly:'录屏刚开始就被系统中断了。若反复出现，请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后重启浏览器。',
     toastAudioRetry:'带系统声音的捕获失败，已自动改为无声录制。下次可先取消勾选「系统声音」。',
@@ -484,9 +486,11 @@ const CAND = [
   ['video/webm;codecs=vp8,opus','webm','WebM · VP8'],
   ['video/webm','webm','WebM'],
 ];
-function pickMime(){
+function pickMime(wantExt){
   if (!window.MediaRecorder) return null;
-  for (const [mime, ext, label] of CAND) { try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label }; } catch(e){} }
+  for (const [mime, ext, label] of CAND) {
+    if (wantExt && ext !== wantExt) continue;
+    try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label }; } catch(e){} }
   return null;
 }
 
@@ -496,7 +500,7 @@ const S = {
   rec:null, chunks:[], screen:null, mic:null, actx:null,
   t0:0, pausedAcc:0, pausedAt:0, tick:null,
   blob:null, url:null, mime:null, ext:'mp4', finalDur:0,
-  stopReason:null, log:[],
+  stopReason:null, log:[], downgraded:false, finalizeDone:false,
 };
 function dlog(ev, detail){
   const e = { t: Math.round(performance.now()) / 1000, ev };
@@ -551,7 +555,7 @@ function cleanupStreams(){
 async function startFlow(){
   const mime = pickMime();
   if (!mime){ toast(L[LANG].unsupported); return; }
-  S.stopReason = null; S.log.length = 0;
+  S.stopReason = null; S.log.length = 0; S.downgraded = false; S.finalizeDone = false;
   dlog('start', { mime: mime.mime });
   els.rec.disabled = true;
   try {
@@ -601,10 +605,34 @@ async function startFlow(){
     const stream = new MediaStream(tracks);
 
     S.chunks = []; S.mime = mime;
-    S.rec = new MediaRecorder(stream, { mimeType: mime.mime, videoBitsPerSecond: 8000000 });
-    S.rec.ondataavailable = e => { if (e.data && e.data.size){ S.chunks.push(e.data); dlog('chunk', e.data.size); } };
-    S.rec.onstop = finalize;
-    S.rec.onerror = () => { dlog('rec-error'); S.stopReason = 'error'; toast(L[LANG].toastRecErr); stopRecording(); };
+    const makeRec = m => {
+      const r = new MediaRecorder(stream, { mimeType: m.mime, videoBitsPerSecond: 8000000 });
+      r.ondataavailable = e => { if (e.data && e.data.size){ S.chunks.push(e.data); dlog('chunk', e.data.size); } };
+      r.onstop = finalize;
+      r.onerror = ev => {
+        dlog('rec-error', ev && ev.error ? (ev.error.name + ': ' + (ev.error.message || '')).slice(0, 120) : 'unknown');
+        if (S.mime.ext === 'mp4' && S.chunks.length === 0 && !S.downgraded){
+          S.downgraded = true;
+          const fb = pickMime('webm');
+          if (fb){
+            dlog('downgrade-webm', fb.mime);
+            try { r.onstop = null; r.stop(); } catch(e){}
+            S.rec = null; S.chunks = []; S.mime = fb;
+            $('fmtBadge').textContent = fb.label;
+            try {
+              S.rec = makeRec(fb);
+              S.rec.start(1000);
+              dlog('rec-start-webm');
+              toast(L[LANG].toastFbWebm);
+              return;
+            } catch(e2){ dlog('fb-start-throw', e2 && e2.name); }
+          }
+        }
+        S.stopReason = 'error'; toast(L[LANG].toastRecErr); stopRecording();
+      };
+      return r;
+    };
+    S.rec = makeRec(mime);
 
     if ($('optCd').checked){
       setState('countdown'); els.st.textContent = L[LANG].stCount;
@@ -640,11 +668,17 @@ function stopRecording(){
 }
 
 function finalize(){
+  if (S.finalizeDone) return;
+  S.finalizeDone = true;
   cleanupStreams();
   stopTick();
   const blob = new Blob(S.chunks, { type: (S.rec && S.rec.mimeType) || S.mime.mime });
   dlog('finalize', { reason: S.stopReason || 'user', size: blob.size, dur: Math.round(S.finalDur * 10) / 10 });
-  if (!blob.size){ toast(L[LANG].toastEmpty); showPermCard(); S.chunks = []; setState('idle'); return; }
+  if (!blob.size){
+    if (S.stopReason === 'error') toast(L[LANG].toastRecErr);
+    else { toast(L[LANG].toastEmpty); showPermCard(); }
+    S.chunks = []; setState('idle'); return;
+  }
   if (S.stopReason === 'track-ended' && S.finalDur < 1.5){ toast(L[LANG].toastEarly); showPermCard(); }
   setState('review');
   S.blob = blob;
