@@ -29,7 +29,8 @@
 {"@type":"Question","name":"Where does my video go?","acceptedAnswer":{"@type":"Answer","text":"Nowhere. Recording happens entirely inside your browser and the file is saved straight to your device. Nothing is uploaded to any server."}},
 {"@type":"Question","name":"Can I record system audio on macOS?","acceptedAnswer":{"@type":"Answer","text":"Yes on Chrome 141 or newer with macOS 14.2+. On older versions, macOS only allows tab audio — share a Chrome tab and its sound will be captured. Windows supports system audio."}},
 {"@type":"Question","name":"Will I get an MP4 file?","acceptedAnswer":{"@type":"Answer","text":"On Chrome 126+, Edge, and Safari the recording is saved as MP4 (H.264), ready for any platform. Firefox saves WebM — most platforms accept it, or convert it to MP4 afterwards."}},
-{"@type":"Question","name":"Which browsers and devices are supported?","acceptedAnswer":{"@type":"Answer","text":"Desktop Chrome, Edge, Brave, Safari 16+, and Firefox. Mobile browsers don't allow screen sharing, so CastLens needs a desktop browser."}}
+{"@type":"Question","name":"Which browsers and devices are supported?","acceptedAnswer":{"@type":"Answer","text":"Desktop Chrome, Edge, Brave, Safari 16+, and Firefox. Mobile browsers don't allow screen sharing, so CastLens needs a desktop browser."}},
+{"@type":"Question","name":"Why wasn't I asked for screen recording permission?","acceptedAnswer":{"@type":"Answer","text":"macOS asks for Screen Recording permission once per browser app and never again — if that single prompt was missed or dismissed, capture fails silently. Open System Settings → Privacy & Security → Screen Recording, enable your browser, and fully restart it."}}
 ]}
 </script>
 <style>
@@ -96,6 +97,14 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 #timer{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;letter-spacing:1px}
 #stLabel{font-size:13px;color:var(--mut)}
 .hint{text-align:center;color:var(--mut);font-size:13.5px;margin:10px 0 0;min-height:20px}
+/* permission guide card */
+.permcard{margin-top:18px;border:1.5px solid var(--accent);border-radius:14px;padding:16px 40px 16px 18px;background:var(--card);position:relative;box-shadow:0 8px 26px var(--glow)}
+.pc-t{font-weight:700;font-size:15.5px;color:var(--accent);margin-bottom:4px}
+.pc-d{color:var(--mut);font-size:13.5px;margin:5px 0}
+.pc-steps{margin:8px 0 12px;padding-left:20px;color:var(--ink);font-size:14px}
+.pc-steps li{margin:3px 0}
+.pc-btns{display:flex;gap:10px;flex-wrap:wrap}
+.pc-btns .btn{padding:9px 18px;font-size:14px;display:inline-block;text-decoration:none}
 /* review */
 #review{margin-top:20px;border-top:1px solid var(--line);padding-top:20px}
 #preview{width:100%;max-height:340px;border-radius:10px;background:#000;display:block;margin:0 auto 14px}
@@ -189,6 +198,22 @@ footer .cn{margin-bottom:6px}
     </div>
     <p class="hint" id="hint" data-i18n="hintIdle">Click Record — you'll pick a screen, window, or tab in the browser prompt.</p>
 
+    <div id="permCard" class="permcard" hidden>
+      <button class="mxf-x" id="pcX" aria-label="Close">×</button>
+      <div class="pc-t" data-i18n="pcT">Screen Recording permission is off</div>
+      <p class="pc-d" data-i18n="pcD">macOS grants screen capture to the browser app itself — and asks only once. If that prompt was missed, recording fails silently. Fix it in three steps:</p>
+      <ol class="pc-steps" id="pcMac">
+        <li data-i18n="pcS1">Click "Open System Settings" below and select Screen Recording.</li>
+        <li data-i18n="pcS2">Turn on your browser — if it's already on, switch it off and on again.</li>
+        <li data-i18n="pcS3">Fully quit the browser (⌘Q) and reopen this page.</li>
+      </ol>
+      <p class="pc-d" id="pcOther" data-i18n="pcOther" hidden>On Windows no OS-level permission is needed: update your browser and retry, and check that no other capture software is holding the screen.</p>
+      <div class="pc-btns">
+        <a class="btn" id="pcOpen" href="x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" data-i18n="btnPermSet">Open System Settings</a>
+        <button class="btn ghost" id="pcRe" data-i18n="btnPermRe">I've enabled it — test again</button>
+      </div>
+    </div>
+
     <div id="review" hidden>
       <video id="preview" controls playsinline></video>
       <p class="rvmeta" id="rvMeta"></p>
@@ -225,6 +250,7 @@ footer .cn{margin-bottom:6px}
     <details><summary data-i18n="q3">Can I record system audio on macOS?</summary><p data-i18n="a3">Yes on Chrome 141 or newer with macOS 14.2+. On older versions, macOS only allows tab audio — share a Chrome tab and its sound will be captured. Windows supports system audio.</p></details>
     <details><summary data-i18n="q4">Will I get an MP4 file?</summary><p data-i18n="a4">On Chrome 126+, Edge, and Safari the recording is saved as MP4 (H.264), ready for any platform. Firefox saves WebM — most platforms accept it, or convert it to MP4 afterwards.</p></details>
     <details><summary data-i18n="q5">Which browsers and devices are supported?</summary><p data-i18n="a5">Desktop Chrome, Edge, Brave, Safari 16+, and Firefox. Mobile browsers don't allow screen sharing, so CastLens needs a desktop browser.</p></details>
+    <details><summary data-i18n="q6">Why wasn't I asked for screen recording permission?</summary><p data-i18n="a6">macOS asks for Screen Recording permission once per browser app and never again — if that single prompt was missed or dismissed, capture fails silently. Open System Settings → Privacy &amp; Security → Screen Recording, enable your browser, and fully restart it.</p></details>
   </section>
 
 </main>
@@ -298,6 +324,17 @@ const L = {
     toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
     toastEarly:'The capture was cut off by the system right after it started. If this repeats, allow Screen Recording for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then restart it.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
+    pcT:'Screen Recording permission is off',
+    pcD:'macOS grants screen capture to the browser app itself — and asks only once. If that prompt was missed, recording fails silently. Fix it in three steps:',
+    pcS1:'Click "Open System Settings" below and select Screen Recording.',
+    pcS2:'Turn on your browser — if it\'s already on, switch it off and on again.',
+    pcS3:'Fully quit the browser (⌘Q) and reopen this page.',
+    pcOther:'On Windows no OS-level permission is needed: update your browser and retry, and check that no other capture software is holding the screen.',
+    btnPermSet:'Open System Settings',
+    btnPermRe:'I\'ve enabled it — test again',
+    pcOk:'Permission verified — you\'re ready to record.',
+    q6:'Why wasn\'t I asked for screen recording permission?',
+    a6:'macOS asks for Screen Recording permission once per browser app and never again — if that single prompt was missed or dismissed, capture fails silently. Open System Settings → Privacy & Security → Screen Recording, enable your browser, and fully restart it.',
     howT:'How it works',
     s1t:'Choose what to capture', s1d:'Click Record, then pick a screen, an app window, or a Chrome tab in the browser prompt.',
     s2t:'Record with optional audio', s2d:'Toggle your microphone or system audio before you start. Pause and resume any time.',
@@ -338,6 +375,17 @@ const L = {
     toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
     toastEarly:'录屏刚开始就被系统中断了。若反复出现，请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后重启浏览器。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
+    pcT:'「屏幕录制」权限未开启',
+    pcD:'macOS 把屏幕捕获权限授给浏览器应用本身，而且只提示一次——错过就再也不弹，失败是静默的。三步修复：',
+    pcS1:'点下方「打开系统设置」，找到「屏幕录制」。',
+    pcS2:'打开你的浏览器的开关——若已打开，先关再开一次。',
+    pcS3:'完全退出浏览器（⌘Q）后重新打开本页。',
+    pcOther:'Windows 一般无需系统级授权：更新浏览器后重试，并检查是否有其他录屏软件占用了屏幕。',
+    btnPermSet:'打开系统设置',
+    btnPermRe:'我已开启，重新检测',
+    pcOk:'检测通过，权限正常，可以开始录制了。',
+    q6:'为什么没有弹出授权提示？',
+    a6:'macOS 只在每个浏览器应用首次录屏时询问一次「屏幕录制」授权，错过或取消后不再弹窗，失败是静默的。请到 系统设置 → 隐私与安全性 → 屏幕录制 打开你的浏览器，然后完全重启它。',
     howT:'使用方法',
     s1t:'选择录制对象', s1d:'点击开始录制，在浏览器弹窗里选择整个屏幕、某个应用窗口或某个标签页。',
     s2t:'按需开启声音', s2d:'开始前可打开麦克风或系统声音，录制中随时暂停、继续。',
@@ -499,12 +547,13 @@ async function startFlow(){
         audio: $('optSys').checked
       });
       dlog('gdm-ok', { video: S.screen.getVideoTracks().length, audio: S.screen.getAudioTracks().length });
+      hidePermCard();
     } catch(e){
       const name = e && e.name, msg = (e && e.message) || '';
       dlog('gdm-err', name + ': ' + msg);
       cleanupStreams();
       if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
-      else if (name === 'NotReadableError') toast(L[LANG].toastCapFail);
+      else if (name === 'NotReadableError'){ toast(L[LANG].toastCapFail); showPermCard(); }
       else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
       else toast(msg || L[LANG].unsupported);
       return;
@@ -565,8 +614,8 @@ function finalize(){
   stopTick();
   const blob = new Blob(S.chunks, { type: (S.rec && S.rec.mimeType) || S.mime.mime });
   dlog('finalize', { reason: S.stopReason || 'user', size: blob.size, dur: Math.round(S.finalDur * 10) / 10 });
-  if (!blob.size){ toast(L[LANG].toastEmpty); S.chunks = []; setState('idle'); return; }
-  if (S.stopReason === 'track-ended' && S.finalDur < 1.5) toast(L[LANG].toastEarly);
+  if (!blob.size){ toast(L[LANG].toastEmpty); showPermCard(); S.chunks = []; setState('idle'); return; }
+  if (S.stopReason === 'track-ended' && S.finalDur < 1.5){ toast(L[LANG].toastEarly); showPermCard(); }
   setState('review');
   S.blob = blob;
   if (S.url) URL.revokeObjectURL(S.url);
@@ -595,6 +644,27 @@ els.save.onclick = () => {
   const a = document.createElement('a');
   a.href = S.url; a.download = S.filename || ('castlens.' + S.mime.ext);
   document.body.appendChild(a); a.click(); a.remove();
+};
+
+/* permission guide card */
+const IS_MAC = /Mac/i.test((navigator.platform || '') + ' ' + navigator.userAgent);
+function showPermCard(){
+  if (!IS_MAC){ $('pcMac').hidden = true; $('pcOther').hidden = false; $('pcOpen').hidden = true; }
+  $('permCard').hidden = false;
+}
+function hidePermCard(){ $('permCard').hidden = true; }
+$('pcX').onclick = hidePermCard;
+$('pcRe').onclick = async () => {
+  try {
+    const st = await navigator.mediaDevices.getDisplayMedia({ video:{ frameRate:30 } });
+    st.getTracks().forEach(t => t.stop());
+    dlog('perm-retest-ok');
+    hidePermCard();
+    toast(L[LANG].pcOk);
+  } catch(e){
+    dlog('perm-retest-fail', e && e.name);
+    toast(e && e.name === 'NotAllowedError' ? L[LANG].toastCancel : L[LANG].toastCapFail);
+  }
 };
 
 window.addEventListener('beforeunload', e => {
