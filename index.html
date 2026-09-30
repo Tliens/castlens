@@ -405,6 +405,7 @@ const L = {
     trimTitle:'Trim', dlTrim:'Download (trimmed)', dlFull:'Download original',
     trimExporting:'Exporting', trimDone:'Trimmed video downloaded',
     trimErr:'Trim export failed — downloaded the original instead.',
+    pipHint:'After stopping, switch back to the CastLens tab to preview & download.',
     diagCopied:'Diagnostics copied — just paste it to support.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
     pcT:'Screen Recording permission is off',
@@ -468,6 +469,7 @@ const L = {
     trimTitle:'裁剪', dlTrim:'下载（裁剪版）', dlFull:'下载完整原片',
     trimExporting:'导出中', trimDone:'裁剪版已下载',
     trimErr:'裁剪导出失败，已改为下载原片。',
+    pipHint:'停止后切回 CastLens 标签页预览并下载视频。',
     diagCopied:'诊断信息已复制，直接粘贴给支持即可。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
     pcT:'「屏幕录制」权限未开启',
@@ -607,7 +609,7 @@ function elapsedSec(){
 }
 function startTick(){
   stopTick();
-  S.tick = setInterval(() => { els.timer.textContent = fmtDur(elapsedSec()); }, 250);
+  S.tick = setInterval(() => { els.timer.textContent = fmtDur(elapsedSec()); updatePipPanel(); }, 250);
 }
 function stopTick(){ if (S.tick){ clearInterval(S.tick); S.tick = null; } }
 
@@ -628,6 +630,7 @@ function cleanupStreams(){
   for (const st of [S.screen, S.mic, S.cam]) if (st) st.getTracks().forEach(t => t.stop());
   if (S.actx) { try{ S.actx.close(); }catch(e){} }
   if (S.pipWin){ try{ S.pipWin.close(); }catch(e){} S.pipWin = null; }
+  pipEls = null;
   S.screen = S.mic = S.actx = S.cam = null;
 }
 
@@ -652,10 +655,10 @@ function openLayout(){
 function buildLayoutInPip(pw){
   return new Promise(resolve => {
     let done = false;
-    const finish = val => {
+    const finish = (val, keep) => {
       if (done) return; done = true;
       try { clearInterval(drawT); } catch(e){}
-      try { pw.close(); } catch(e){}
+      if (!keep){ try { pw.close(); } catch(e){} }
       resolve(val);
     };
     const d = pw.document;
@@ -682,7 +685,7 @@ button.g{background:none;border:1px solid rgba(255,255,255,.25);color:#cfc6bb}`;
       mk('1:1', 'chip', () => preset(1)),
       Object.assign(d.createElement('i'), { className: 'sp' }),
       mk(L[LANG].lyCancel, 'b g', () => finish(null)),
-      mk(L[LANG].lyGo, 'b', () => { if (R) finish({ sx: R.x, sy: R.y, sw: R.w, sh: R.h }); }),
+      mk(L[LANG].lyGo, 'b', () => { if (R) finish({ sx: R.x, sy: R.y, sw: R.w, sh: R.h }, true); }),
     );
     const lbl = d.createElement('div'); lbl.className = 't';
     d.body.append(tip, cv, row, lbl);
@@ -807,6 +810,57 @@ button.g{background:none;border:1px solid rgba(255,255,255,.25);color:#cfc6bb}`;
     dlog('pip-ui');
   });
 }
+/* PIP stays open as a floating recorder console during countdown/recording */
+let pipEls = null;
+function buildPipRecorderPanel(lay){
+  const pw = S.pipWin;
+  if (!pw || pw.closed) return;
+  try {
+    const d = pw.document;
+    d.body.innerHTML = '';
+    const st = d.createElement('style');
+    st.textContent = `body{margin:0;background:#141210;color:#f0e8dd;font-family:-apple-system,'PingFang SC',sans-serif;user-select:none}
+.st{display:flex;justify-content:space-between;align-items:center;padding:9px 12px 4px;font-size:12px;color:#cfc6bb}
+.rec{color:#ff4d4f;font-weight:700}
+#pv{display:block;width:100%;background:#000}
+#tm{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:8px;align-items:center;padding:8px 12px 4px}
+.row button{border:none;border-radius:9px;padding:8px 0;font-size:12.5px;cursor:pointer;color:#fff;background:#3a332d;flex:1}
+.row button.g2{background:#bc4b2c}
+.row button.g3{background:none;border:1px solid rgba(255,255,255,.25)}
+.hint{font-size:10.5px;color:#8f8275;padding:2px 12px 10px;line-height:1.4}`;
+    d.head.appendChild(st);
+    const status = d.createElement('div'); status.className = 'st';
+    const stat = d.createElement('span'); const tm = d.createElement('span'); tm.id = 'tm'; tm.textContent = '00:00';
+    status.append(stat, tm);
+    const prev = d.createElement('canvas'); prev.id = 'pv';
+    prev.width = 446; prev.height = Math.max(60, Math.round(446 * lay.sh / Math.max(1, lay.sw)));
+    const row = d.createElement('div'); row.className = 'row';
+    const bPause = d.createElement('button'); bPause.textContent = L[LANG].btnPause;
+    const bStop = d.createElement('button'); bStop.className = 'g2'; bStop.textContent = L[LANG].btnStop;
+    row.append(bPause, bStop);
+    const hint = d.createElement('div'); hint.className = 'hint'; hint.textContent = L[LANG].pipHint;
+    d.body.append(status, prev, row, hint);
+    bPause.onclick = () => { pauseResume(); };
+    bStop.onclick = () => stopRecording();
+    pipEls = { stat, tm, prev, prevCtx: prev.getContext('2d'), pause: bPause };
+    pw.addEventListener('pagehide', () => { pipEls = null; S.pipWin = null; }, { once: true });
+    dlog('pip-panel');
+  } catch(e){ dlog('pip-panel-err', e && e.message); }
+}
+function updatePipPanel(){
+  if (!pipEls || !S.pipWin || S.pipWin.closed) return;
+  try {
+    pipEls.tm.textContent = fmtDur(elapsedSec());
+    const s = S.state;
+    if (s === 'recording'){ pipEls.stat.textContent = '● ' + L[LANG].stRec; pipEls.stat.className = 'rec'; }
+    else if (s === 'paused'){ pipEls.stat.textContent = '‖ ' + L[LANG].stPause; pipEls.stat.className = ''; }
+    else if (s === 'countdown'){ pipEls.stat.textContent = pipEls._cd || ''; pipEls.stat.className = 'rec'; }
+    pipEls.pause.textContent = s === 'paused' ? L[LANG].btnResume : L[LANG].btnPause;
+    if (S.cv && pipEls.prev.width) pipEls.prevCtx.drawImage(S.cv, 0, 0, pipEls.prev.width, pipEls.prev.height);
+  } catch(e){}
+}
+
 /* in-tab overlay fallback (no Document PiP support) */
 function openLayoutInline(){
   return new Promise(resolve => {
@@ -1026,6 +1080,7 @@ async function startFlow(){
       if (!lay){ dlog('layout-cancel'); cleanupStreams(); setState('idle'); return; }
       S.layout = lay; dlog('layout-ok', { w: lay.sw, h: lay.sh, cam: !!(S.cam && S.cam.getVideoTracks().length) });
       startCanvasPipe();
+      buildPipRecorderPanel(lay);
     }
 
     const audioTrack = buildAudioTrack();
@@ -1070,6 +1125,7 @@ async function startFlow(){
       const seq = S.layout ? [5,4,3,2,1] : [3,2,1];
       for (const n of seq){
         num.textContent = n;
+        if (pipEls){ pipEls.stat.textContent = String(n); pipEls.stat.className = 'rec'; pipEls._cd = String(n); }
         await new Promise(r => setTimeout(r, S.layout ? 700 : 800));
       }
       ov.hidden = true;
@@ -1350,7 +1406,7 @@ function init(){
 init();
 
 /* debug handle for automated tests */
-window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; }, TR, get S(){ return S; }, setTrim:(a,b)=>{ TR.in=a; TR.out=b; TR.trimmed=(TR.dur-(b-a))>0.05; renderTrim(); updTrimBtn(); },
+window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; }, TR, get S(){ return S; }, buildPipRecorderPanel, updatePipPanel, pauseResume, stopRecording, setTrim:(a,b)=>{ TR.in=a; TR.out=b; TR.trimmed=(TR.dur-(b-a))>0.05; renderTrim(); updTrimBtn(); },
   diag(){ return { state: S.state, reason: S.stopReason, elapsed: S.state === 'recording' || S.state === 'paused' ? Math.round(elapsedSec()*10)/10 : S.finalDur, log: S.log.slice() }; } };
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
