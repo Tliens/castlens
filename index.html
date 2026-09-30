@@ -101,6 +101,33 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 .diagbtn{background:none;border:none;color:var(--mut);font-size:12px;cursor:pointer;text-decoration:underline;padding:2px 8px}
 .diagbtn:hover{color:var(--accent)}
 
+/* layout overlay (region + webcam) */
+#layout{position:fixed;inset:0;z-index:150;background:rgba(8,6,5,.92);display:flex;align-items:center;justify-content:center}
+#lyBox{position:relative;background:#000;box-shadow:0 12px 50px rgba(0,0,0,.5);touch-action:none}
+#lyVideo{display:block;width:100%;height:100%}
+#lySel{position:absolute;border:1.5px solid #e06a45;box-shadow:0 0 0 100000px rgba(0,0,0,.5);cursor:move;z-index:2}
+#lySize{position:absolute;top:-26px;left:0;background:#e06a45;color:#fff;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap}
+#lySel .h{position:absolute;width:14px;height:14px;background:#fff;border:1.5px solid #e06a45;border-radius:3px;z-index:3}
+.hnw{left:-8px;top:-8px;cursor:nwse-resize}.hne{right:-8px;top:-8px;cursor:nesw-resize}
+.hsw{left:-8px;bottom:-8px;cursor:nesw-resize}.hse{right:-8px;bottom:-8px;cursor:nwse-resize}
+.hn{left:50%;top:-8px;margin-left:-7px;cursor:ns-resize}.hs{left:50%;bottom:-8px;margin-left:-7px;cursor:ns-resize}
+.hw{left:-8px;top:50%;margin-top:-7px;cursor:ew-resize}.he{right:-8px;top:50%;margin-top:-7px;cursor:ew-resize}
+#lyCam{position:absolute;width:120px;height:120px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.45);cursor:grab;z-index:4;background:#000}
+#lyCam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#lyChips{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:5}
+#lyChips button{background:rgba(15,12,10,.8);color:#eee;border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:5px 14px;font-size:13px;cursor:pointer;backdrop-filter:blur(6px)}
+#lyChips button:hover{border-color:#e06a45;color:#e06a45}
+#lyBar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:5;flex-wrap:wrap;justify-content:center}
+#lyTip{color:#d8cfc5;font-size:13.5px;background:rgba(15,12,10,.8);padding:8px 14px;border-radius:10px;backdrop-filter:blur(6px)}
+/* trim */
+#trimBox{margin-top:16px}
+.trim-t{font-size:13.5px;color:var(--mut);margin:0 0 8px;display:flex;justify-content:space-between}
+#trimBar{position:relative;height:26px;border-radius:8px;background:var(--line);touch-action:none}
+#trimFill{position:absolute;top:0;bottom:0;background:var(--accent);opacity:.4;border-radius:8px}
+#trimIn,#trimOut{position:absolute;top:50%;width:14px;height:26px;transform:translateY(-50%);background:var(--accent);cursor:ew-resize;z-index:2}
+#trimIn{border-radius:6px 2px 2px 6px}#trimOut{border-radius:2px 6px 6px 2px}
+.trim-meta{font-size:12.5px;color:var(--mut);margin-top:6px;text-align:center}
+
 /* permission modal */
 .pcm{position:fixed;inset:0;background:rgba(10,8,6,.66);backdrop-filter:blur(3px);z-index:140;display:flex;align-items:center;justify-content:center;padding:20px}
 .pcm-box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px 22px;max-width:460px;width:100%;box-shadow:0 18px 60px rgba(0,0,0,.35);position:relative}
@@ -190,6 +217,8 @@ footer .cn{margin-bottom:6px}
       <label class="sw"><input type="checkbox" id="optMic"><span class="sw-t"></span><span data-i18n="micLabel">Microphone</span></label>
       <label class="sw"><input type="checkbox" id="optSys" checked><span class="sw-t"></span><span data-i18n="sysLabel">System audio</span></label>
       <label class="sw"><input type="checkbox" id="optCd" checked><span class="sw-t"></span><span data-i18n="cdLabel">3s countdown</span></label>
+      <label class="sw"><input type="checkbox" id="optRegion"><span class="sw-t"></span><span data-i18n="regionLabel">Region</span></label>
+      <label class="sw"><input type="checkbox" id="optCam"><span class="sw-t"></span><span data-i18n="camLabel">Webcam</span></label>
       <span class="fmt" id="fmtBadge">MP4</span>
     </div>
 
@@ -227,9 +256,37 @@ footer .cn{margin-bottom:6px}
     <div id="review" hidden>
       <video id="preview" controls playsinline></video>
       <p class="rvmeta" id="rvMeta"></p>
+      <div id="trimBox" hidden>
+        <p class="trim-t"><span data-i18n="trimTitle">Trim</span><span id="trimRange"></span></p>
+        <div id="trimBar"><div id="trimFill"></div><i id="trimIn"></i><i id="trimOut"></i></div>
+        <p class="trim-meta" id="trimLen"></p>
+      </div>
       <div class="rvbtns">
         <button class="btn" id="btnSave"><span data-i18n="rvDownload">Download</span></button>
+        <button class="btn ghost" id="btnFull" data-i18n="dlFull" hidden>Download original</button>
         <button class="btn ghost" id="btnDiscard" data-i18n="rvDiscard">Discard &amp; re-record</button>
+      </div>
+    </div>
+
+    <div id="layout" hidden>
+      <div id="lyBox">
+        <video id="lyVideo" muted playsinline></video>
+        <div id="lySel"><span id="lySize">0×0</span>
+          <i class="h hn"></i><i class="h hs"></i><i class="h hw"></i><i class="h he"></i>
+          <i class="h hnw"></i><i class="h hne"></i><i class="h hsw"></i><i class="h hse"></i>
+        </div>
+        <div id="lyCam" hidden><video id="lyCamV" muted playsinline></video></div>
+      </div>
+      <div id="lyChips">
+        <button id="lyFull" type="button" data-i18n="lyFull">Full frame</button>
+        <button id="ly169" type="button">16:9</button>
+        <button id="ly43" type="button">4:3</button>
+        <button id="ly11" type="button">1:1</button>
+      </div>
+      <div id="lyBar">
+        <span id="lyTip" data-i18n="lyTip">Drag to draw the recording area; drag the circle to place your webcam.</span>
+        <button class="btn ghost" id="lyCancel" type="button" data-i18n="lyCancel">Cancel</button>
+        <button class="btn" id="lyGo" type="button" data-i18n="lyGo">Start recording</button>
       </div>
     </div>
   </section>
@@ -337,6 +394,13 @@ const L = {
     toastAudioRetry:'Capturing with system audio failed — restarted the capture without audio. Uncheck "System audio" beforehand to skip this.',
     btnPermDiag:'Copy diagnostics',
     stPicking:'Selecting source…',
+    regionLabel:'Region', camLabel:'Webcam', stLayout:'Adjusting layout…',
+    toastCamFail:'Webcam unavailable — recording without the camera overlay.',
+    lyFull:'Full frame', lyCancel:'Cancel', lyGo:'Start recording',
+    lyTip:'Drag to draw the recording area; drag the circle to place your webcam; drag edges to resize.',
+    trimTitle:'Trim', dlTrim:'Download (trimmed)', dlFull:'Download original',
+    trimExporting:'Exporting', trimDone:'Trimmed video downloaded',
+    trimErr:'Trim export failed — downloaded the original instead.',
     diagCopied:'Diagnostics copied — just paste it to support.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
     pcT:'Screen Recording permission is off',
@@ -393,6 +457,13 @@ const L = {
     toastAudioRetry:'带系统声音的捕获失败，已自动改为无声录制。下次可先取消勾选「系统声音」。',
     btnPermDiag:'复制诊断信息',
     stPicking:'正在选择捕获源…',
+    regionLabel:'录制区域', camLabel:'摄像头画中画', stLayout:'调整画面布局…',
+    toastCamFail:'摄像头不可用，将不含画中画。',
+    lyFull:'整个画面', lyCancel:'取消', lyGo:'开始录制',
+    lyTip:'拖拽绘制录制区域；拖动圆形窗口调整摄像头位置；拖边缘调整大小。',
+    trimTitle:'裁剪', dlTrim:'下载（裁剪版）', dlFull:'下载完整原片',
+    trimExporting:'导出中', trimDone:'裁剪版已下载',
+    trimErr:'裁剪导出失败，已改为下载原片。',
     diagCopied:'诊断信息已复制，直接粘贴给支持即可。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
     pcT:'「屏幕录制」权限未开启',
@@ -501,6 +572,7 @@ const S = {
   t0:0, pausedAcc:0, pausedAt:0, tick:null,
   blob:null, url:null, mime:null, ext:'mp4', finalDur:0,
   stopReason:null, log:[], downgraded:false, finalizeDone:false,
+  cam:null, layout:null, drawT:null, pipe:null, camPipe:null, cv:null, cvCtx:null, cvStream:null, camPos:{x:.82,y:.82},
 };
 function dlog(ev, detail){
   const e = { t: Math.round(performance.now()) / 1000, ev };
@@ -513,13 +585,14 @@ const els = { rec:$('btnRecord'), pause:$('btnPause'), stop:$('btnStop'), timer:
 
 function setState(st){
   S.state = st;
-  els.rec.hidden = (st === 'countdown' || st === 'recording' || st === 'paused');
+  els.rec.hidden = (st === 'countdown' || st === 'recording' || st === 'paused' || st === 'layout');
   els.pause.hidden = !(st === 'recording' || st === 'paused');
   els.stop.hidden = !(st === 'recording' || st === 'paused');
   els.review.hidden = (st !== 'review');
   $('optMic').disabled = $('optSys').disabled = $('optCd').disabled = (st !== 'idle' && st !== 'review');
   if (st === 'recording'){ els.pause.textContent = L[LANG].btnPause; els.st.textContent = L[LANG].stRec; setHint('hintRec'); }
   if (st === 'paused'){ els.pause.textContent = L[LANG].btnResume; els.st.textContent = L[LANG].stPause; setHint('hintPause'); }
+  if (st === 'layout'){ els.st.textContent = L[LANG].stLayout; }
   if (st === 'idle'){ els.st.textContent = L[LANG].stIdle; setHint('hintIdle'); els.timer.textContent = '00:00'; }
   if (st === 'review'){ setHint('hintReview'); }
 }
@@ -547,9 +620,165 @@ function buildAudioTrack(){
 }
 
 function cleanupStreams(){
-  for (const st of [S.screen, S.mic]) if (st) st.getTracks().forEach(t => t.stop());
+  stopCanvasPipe();
+  for (const st of [S.screen, S.mic, S.cam]) if (st) st.getTracks().forEach(t => t.stop());
   if (S.actx) { try{ S.actx.close(); }catch(e){} }
-  S.screen = S.mic = S.actx = null;
+  S.screen = S.mic = S.actx = S.cam = null;
+}
+
+/* ---- layout overlay: region selection + webcam placement ---- */
+function openLayout(){
+  return new Promise(resolve => {
+    const ov = $('layout'), box = $('lyBox'), vid = $('lyVideo'),
+          sel = $('lySel'), size = $('lySize'), camEl = $('lyCam'), camV = $('lyCamV');
+    let VW = 1280, VH = 720, scale = 1, R = null, drag = null, done = false;
+    const camOn = !!(S.cam && S.cam.getVideoTracks().length);
+    const finish = val => {
+      if (done) return; done = true;
+      try { vid.srcObject = null; } catch(e){}
+      try { camV.srcObject = null; } catch(e){}
+      ov.hidden = true;
+      document.removeEventListener('keydown', onEsc);
+      resolve(val);
+    };
+    const onEsc = e => { if (e.key === 'Escape') finish(null); };
+    vid.srcObject = new MediaStream(S.screen.getVideoTracks());
+    vid.play().catch(()=>{});
+    if (camOn){ camEl.hidden = false; camV.srcObject = new MediaStream(S.cam.getVideoTracks()); camV.play().catch(()=>{}); }
+    else camEl.hidden = true;
+    const camR = () => Math.max(96, Math.round((R ? R.w : VW) * 0.18));
+    const setSel = (x, y, w, h) => {
+      w = Math.max(64, Math.round(Math.min(w, VW))); h = Math.max(64, Math.round(Math.min(h, VH)));
+      x = Math.max(0, Math.round(Math.min(x, VW - w))); y = Math.max(0, Math.round(Math.min(y, VH - h)));
+      R = { x, y, w, h };
+      sel.style.left = x * scale + 'px'; sel.style.top = y * scale + 'px';
+      sel.style.width = w * scale + 'px'; sel.style.height = h * scale + 'px';
+      size.textContent = w + '×' + h;
+      if (camOn) renderCam();
+    };
+    const renderCam = () => {
+      const r = camR() * scale;
+      camEl.style.width = camEl.style.height = r * 2 + 'px';
+      camEl.style.left = (R.x + S.camPos.x * R.w) * scale - r + 'px';
+      camEl.style.top = (R.y + S.camPos.y * R.h) * scale - r + 'px';
+    };
+    const fit = () => {
+      VW = vid.videoWidth || 1280; VH = vid.videoHeight || 720;
+      scale = Math.min((innerWidth - 56) / VW, (innerHeight - 170) / VH);
+      scale = Math.max(0.05, Math.min(scale, 2));
+      box.style.width = Math.round(VW * scale) + 'px';
+      box.style.height = Math.round(VH * scale) + 'px';
+      if (!R) setSel(0, 0, VW, VH); else setSel(R.x, R.y, R.w, R.h);
+    };
+    const pt = e => { const b = box.getBoundingClientRect(); return { x:(e.clientX - b.left)/scale, y:(e.clientY - b.top)/scale }; };
+    box.onpointerdown = e => {
+      if (e.target.closest('#lyCam')){
+        drag = { mode:'cam', dx: pt(e).x - (R.x + S.camPos.x * R.w), dy: pt(e).y - (R.y + S.camPos.y * R.h) };
+      } else if (e.target.closest('.h')){
+        drag = { mode:'resize', dir: (e.target.className || '').replace('h','').trim(), orig:{...R}, p0:pt(e) };
+      } else {
+        const p = pt(e);
+        if (p.x >= R.x && p.x <= R.x + R.w && p.y >= R.y && p.y <= R.y + R.h){
+          drag = { mode:'move', orig:{...R}, p0:p };
+        } else {
+          drag = { mode:'draw', orig:{ x:p.x, y:p.y }, p0:p };
+          setSel(p.x, p.y, 1, 1);
+        }
+      }
+      try{ box.setPointerCapture(e.pointerId); }catch(_){}
+      e.preventDefault();
+    };
+    box.onpointermove = e => {
+      if (!drag || done) return;
+      const p = pt(e), d = drag;
+      if (d.mode === 'cam'){
+        S.camPos.x = Math.max(.12, Math.min(.88, (p.x - d.dx - R.x) / R.w));
+        S.camPos.y = Math.max(.15, Math.min(.85, (p.y - d.dy - R.y) / R.h));
+        renderCam();
+      } else if (d.mode === 'move'){
+        setSel(d.orig.x + (p.x - d.p0.x), d.orig.y + (p.y - d.p0.y), d.orig.w, d.orig.h);
+      } else if (d.mode === 'draw'){
+        setSel(Math.min(d.orig.x, p.x), Math.min(d.orig.y, p.y), Math.abs(p.x - d.orig.x), Math.abs(p.y - d.orig.y));
+      } else if (d.mode === 'resize'){
+        let { x, y, w, h } = d.orig; const dx = p.x - d.p0.x, dy = p.y - d.p0.y, dir = d.dir;
+        if (dir.includes('e')) w = d.orig.w + dx;
+        if (dir.includes('s')) h = d.orig.h + dy;
+        if (dir.includes('w')){ x = d.orig.x + dx; w = d.orig.w - dx; }
+        if (dir.includes('n')){ y = d.orig.y + dy; h = d.orig.h - dy; }
+        if (w < 64){ if (dir.includes('w')) x = d.orig.x + d.orig.w - 64; w = 64; }
+        if (h < 64){ if (dir.includes('n')) y = d.orig.y + d.orig.h - 64; h = 64; }
+        setSel(x, y, w, h);
+      }
+    };
+    const endDrag = () => { drag = null; };
+    box.onpointerup = endDrag; box.onpointercancel = endDrag;
+    const preset = ar => { let w = VW, h = w / ar; if (h > VH){ h = VH; w = h * ar; } setSel((VW - w)/2, (VH - h)/2, w, h); };
+    $('lyFull').onclick = () => preset(VW / VH);
+    $('ly169').onclick = () => preset(16/9);
+    $('ly43').onclick = () => preset(4/3);
+    $('ly11').onclick = () => preset(1);
+    $('lyCancel').onclick = () => finish(null);
+    $('lyGo').onclick = () => finish({ sx:R.x, sy:R.y, sw:R.w, sh:R.h });
+    document.addEventListener('keydown', onEsc);
+    ov.hidden = false;
+    if (vid.readyState >= 1) fit();
+    vid.addEventListener('loadedmetadata', fit, { once:true });
+  });
+}
+
+/* ---- canvas pipeline: crop region + webcam overlay, drawn off the visible tab ---- */
+function startCanvasPipe(){
+  const lay = S.layout;
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true;
+  v.style.cssText = 'position:fixed;left:-9999px;top:0;width:320px;height:180px';
+  v.srcObject = new MediaStream(S.screen.getVideoTracks());
+  document.body.appendChild(v);
+  S.pipe = v;
+  let camV = null;
+  if (S.cam && S.cam.getVideoTracks().length){
+    camV = document.createElement('video');
+    camV.muted = true; camV.playsInline = true;
+    camV.style.cssText = v.style.cssText;
+    camV.srcObject = new MediaStream(S.cam.getVideoTracks());
+    document.body.appendChild(camV);
+    S.camPipe = camV;
+  }
+  const cv = document.createElement('canvas');
+  cv.width = lay.sw; cv.height = lay.sh;
+  S.cv = cv; S.cvCtx = cv.getContext('2d');
+  S.cvStream = cv.captureStream(30);
+  const draw = () => {
+    try{
+      S.cvCtx.drawImage(v, lay.sx, lay.sy, lay.sw, lay.sh, 0, 0, lay.sw, lay.sh);
+      if (camV && camV.videoWidth){
+        const r = Math.max(96, Math.round(lay.sw * 0.18));
+        const cx = S.camPos.x * lay.sw, cy = S.camPos.y * lay.sh;
+        S.cvCtx.save();
+        S.cvCtx.beginPath(); S.cvCtx.arc(cx, cy, r, 0, Math.PI * 2); S.cvCtx.clip();
+        S.cvCtx.fillStyle = '#000'; S.cvCtx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        const s = Math.max(2 * r / camV.videoWidth, 2 * r / camV.videoHeight);
+        const dw = camV.videoWidth * s, dh = camV.videoHeight * s;
+        S.cvCtx.translate(cx, cy); S.cvCtx.scale(-1, 1);
+        S.cvCtx.drawImage(camV, -dw / 2, -dh / 2, dw, dh);
+        S.cvCtx.restore();
+        S.cvCtx.beginPath(); S.cvCtx.arc(cx, cy, r, 0, Math.PI * 2);
+        S.cvCtx.lineWidth = Math.max(3, r * 0.05); S.cvCtx.strokeStyle = 'rgba(255,255,255,.92)';
+        S.cvCtx.stroke();
+      }
+    } catch(e){}
+  };
+  v.play().catch(()=>{});
+  if (camV) camV.play().catch(()=>{});
+  S.drawT = setInterval(draw, 33);   // interval, not rAF: keeps drawing while tab is hidden
+  draw();
+}
+function stopCanvasPipe(){
+  if (S.drawT){ clearInterval(S.drawT); S.drawT = null; }
+  for (const el of [S.pipe, S.camPipe]){ if (el){ try{ el.srcObject = null; el.remove(); }catch(e){} } }
+  S.pipe = S.camPipe = null;
+  if (S.cvStream){ S.cvStream.getTracks().forEach(t => t.stop()); S.cvStream = null; }
+  S.cv = S.cvCtx = null; S.layout = null;
 }
 
 async function startFlow(){
@@ -599,8 +828,21 @@ async function startFlow(){
       if (S.state === 'recording' || S.state === 'paused'){ S.stopReason = 'track-ended'; stopRecording(); }
     });
 
+    if ($('optRegion').checked || $('optCam').checked){
+      if ($('optCam').checked){
+        try { S.cam = await navigator.mediaDevices.getUserMedia({ video:{ width:{ ideal:640 } }, facingMode:'user' }); dlog('cam-ok'); }
+        catch(e){ dlog('cam-fail', e && e.name); toast(L[LANG].toastCamFail); }
+      }
+      setState('layout');
+      dlog('layout-open');
+      const lay = await openLayout();
+      if (!lay){ dlog('layout-cancel'); cleanupStreams(); setState('idle'); return; }
+      S.layout = lay; dlog('layout-ok', { w: lay.sw, h: lay.sh, cam: !!(S.cam && S.cam.getVideoTracks().length) });
+      startCanvasPipe();
+    }
+
     const audioTrack = buildAudioTrack();
-    const tracks = [S.screen.getVideoTracks()[0]];
+    const tracks = [ S.layout ? S.cvStream.getVideoTracks()[0] : S.screen.getVideoTracks()[0] ];
     if (audioTrack) tracks.push(audioTrack);
     const stream = new MediaStream(tracks);
 
@@ -689,10 +931,12 @@ function finalize(){
   S.filename = `castlens-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.${S.mime.ext}`;
   els.meta.textContent = `${fmtDur(S.finalDur)} · ${fmtBytes(blob.size)} · ${S.mime.label}`;
   els.timer.textContent = fmtDur(S.finalDur);
+  setupTrim();
   try{ window.mxFunnel && window.mxFunnel(); }catch(e){}
 }
 
 function discard(){
+  $('trimBox').hidden = true; $('btnFull').hidden = true;
   if (S.url){ URL.revokeObjectURL(S.url); S.url = null; }
   els.preview.removeAttribute('src'); els.preview.load();
   S.blob = null; S.chunks = [];
@@ -703,12 +947,158 @@ els.rec.onclick = () => { if (S.state === 'idle') startFlow(); };
 els.pause.onclick = pauseResume;
 els.stop.onclick = stopRecording;
 els.discard.onclick = discard;
-els.save.onclick = () => {
-  if (!S.url) return;
+function dl(url, name){
   const a = document.createElement('a');
-  a.href = S.url; a.download = S.filename || ('castlens.' + S.mime.ext);
+  a.href = url; a.download = name || 'castlens.webm';
   document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---- trim ---- */
+const TR = { in:0, out:0, dur:0, trimmed:false, exporting:false };
+function setupTrim(){
+  const v = els.preview, bar = $('trimBar'), hIn = $('trimIn'), hOut = $('trimOut');
+  TR.trimmed = false; TR.exporting = false;
+  $('btnFull').hidden = true;
+  const init = () => {
+    TR.dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+    if (!TR.dur || TR.dur < 1.2){ $('trimBox').hidden = true; updTrimBtn(); return; }
+    TR.in = 0; TR.out = TR.dur;
+    $('trimBox').hidden = false;
+    renderTrim(); updTrimBtn();
+  };
+  if (v.readyState >= 1) init(); else v.addEventListener('loadedmetadata', init, { once:true });
+  v.ontimeupdate = () => { if (TR.trimmed && !v.paused && v.currentTime > TR.out - 0.03) v.currentTime = TR.in; };
+  const pos = e => { const b = bar.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)); };
+  let dragH = null;
+  const apply = (nin, nout) => {
+    TR.in = Math.max(0, nin); TR.out = Math.min(TR.dur, nout);
+    if (TR.out - TR.in < 0.5){ if (dragH === 'in') TR.in = Math.max(0, TR.out - 0.5); else TR.out = Math.min(TR.dur, TR.in + 0.5); }
+    TR.trimmed = (TR.dur - (TR.out - TR.in)) > 0.05;
+    renderTrim();
+  };
+  hIn.onpointerdown = e => { dragH = 'in'; try{ bar.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); };
+  hOut.onpointerdown = e => { dragH = 'out'; try{ bar.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); };
+  bar.onpointerdown = e => {
+    if (e.target === hIn || e.target === hOut) return;
+    v.currentTime = TR.in + pos(e) * (TR.out - TR.in);
+  };
+  bar.onpointermove = e => {
+    if (!dragH) return;
+    const p = pos(e) * TR.dur;
+    if (dragH === 'in') apply(p, TR.out); else apply(TR.in, p);
+  };
+  bar.onpointerup = bar.onpointercancel = () => {
+    if (dragH === 'in') v.currentTime = TR.in;
+    dragH = null; updTrimBtn();
+  };
+}
+function renderTrim(){
+  $('trimIn').style.left = (TR.in / TR.dur * 100) + '%';
+  $('trimOut').style.left = (TR.out / TR.dur * 100) + '%';
+  $('trimFill').style.left = (TR.in / TR.dur * 100) + '%';
+  $('trimFill').style.width = ((TR.out - TR.in) / TR.dur * 100) + '%';
+  $('trimRange').textContent = fmtDur(TR.in) + ' – ' + fmtDur(TR.out);
+  $('trimLen').textContent = fmtDur(TR.out - TR.in) + ' / ' + fmtDur(TR.dur);
+}
+function updTrimBtn(){
+  els.save.querySelector('span').textContent = TR.trimmed ? L[LANG].dlTrim : L[LANG].rvDownload;
+  $('btnFull').hidden = !TR.trimmed;
+}
+
+const MB_SOURCES = ['./mb/mediabunny.min.mjs', 'https://cdn.jsdelivr.net/npm/mediabunny@1.61.0/dist/bundles/mediabunny.min.mjs', 'https://esm.sh/mediabunny@1.61.0'];
+let MBp = null;
+function loadMB(){
+  if (!MBp) MBp = (async () => {
+    for (const u of MB_SOURCES){ try { return await import(u); } catch(e){} }
+    throw new Error('mediabunny unavailable');
+  })();
+  return MBp;
+}
+
+async function exportTrim(){
+  const btn = els.save, span = btn.querySelector('span');
+  TR.exporting = true; btn.disabled = true;
+  span.textContent = L[LANG].trimExporting + '…';
+  try {
+    const MB = await loadMB();
+    const { Input, ALL_FORMATS, BlobSource, VideoSampleSink, VideoSampleSource, VideoSample, Output, Mp4OutputFormat, WebMOutputFormat, BufferTarget, Quality,
+            getFirstEncodableVideoCodec, getFirstEncodableAudioCodec, AudioSampleSink, AudioSampleSource } = MB;
+    const isMp4 = (S.blob.type || '').includes('mp4');
+    const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(S.blob) });
+    const vTrack = await input.getPrimaryVideoTrack();
+    if (!vTrack || !(await vTrack.canDecode().catch(() => false))) throw new Error('cannot decode');
+    const aTrack = await input.getPrimaryAudioTrack().catch(() => null);
+    const fmt = isMp4 ? new Mp4OutputFormat({ fastStart: 'in-memory' }) : new WebMOutputFormat();
+    const W = vTrack.codedWidth, H = vTrack.codedHeight;
+    const vCodec = await getFirstEncodableVideoCodec(fmt.getSupportedVideoCodecs(), { width: W, height: H });
+    if (!vCodec) throw new Error('no encoder');
+    const stats = await vTrack.computePacketStats(60).catch(() => null);
+    const fps = (stats && stats.averagePacketRate > 5 && stats.averagePacketRate < 240) ? stats.averagePacketRate : 30;
+    const bitrate = Math.min(18e6, Math.max(4e5, Math.round(W * H * fps * 0.1)));
+    const output = new Output({ format: fmt, target: new BufferTarget() });
+    const vSrc = new VideoSampleSource({ codec: vCodec, quality: new Quality({ bitrate }) });
+    output.addVideoTrack(vSrc);
+    let audioP = Promise.resolve('none');
+    if (aTrack && await aTrack.canDecode().catch(() => false)){
+      try {
+        const aCodec = await getFirstEncodableAudioCodec(fmt.getSupportedAudioCodecs(), { numberOfChannels: aTrack.numberOfChannels, sampleRate: aTrack.sampleRate });
+        if (aCodec){
+          const aSrc = new AudioSampleSource({ codec: aCodec, bitrate: 128000 });
+          output.addAudioTrack(aSrc);
+          audioP = (async () => {
+            const sink = new AudioSampleSink(aTrack);
+            for await (const s of sink.samples()){
+              if (s.timestamp < TR.in - 0.02 || s.timestamp > TR.out + 0.02){ s.close(); continue; }
+              try { s.timestamp -= TR.in; } catch(e){ s.close(); throw e; }
+              await aSrc.add(s); s.close();
+            }
+            return 'ok';
+          })();
+        }
+      } catch(e){ dlog('trim-audio-setup', e && e.message); }
+    }
+    await output.start();
+    const sink = new VideoSampleSink(vTrack);
+    const cv = document.createElement('canvas'); const cx = cv.getContext('2d');
+    let n = 0; const range = Math.max(0.1, TR.out - TR.in);
+    for await (const s of sink.samples()){
+      if (s.timestamp >= TR.out - 0.001){ s.close(); break; }
+      if (s.timestamp < TR.in - 0.001){ s.close(); continue; }
+      if (!cv.width){ cv.width = s.displayWidth || W; cv.height = s.displayHeight || H; }
+      s.draw(cx, 0, 0, cv.width, cv.height);
+      const dur = Math.max(0.001, Math.min(s.duration, TR.out - s.timestamp));
+      const vs = new VideoSample(cv, { timestamp: s.timestamp - TR.in, duration: dur });
+      await vSrc.add(vs); vs.close(); s.close(); n++;
+      if (n % 12 === 0){
+        span.textContent = L[LANG].trimExporting + ' ' + Math.round(Math.min(1, (s.timestamp - TR.in) / range) * 100) + '%';
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+    await audioP;
+    await output.finalize();
+    const mime = isMp4 ? 'video/mp4' : 'video/webm';
+    const ext = isMp4 ? 'mp4' : 'webm';
+    const blob = new Blob([output.target.buffer], { type: mime });
+    const url = URL.createObjectURL(blob);
+    dl(url, (S.filename || ('castlens.' + ext)).replace(/\.[^.]+$/, '') + '-trim.' + ext);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    dlog('trim-export', { ok: true, frames: n, tin: Math.round(TR.in * 10) / 10, tout: Math.round(TR.out * 10) / 10 });
+    toast(L[LANG].trimDone);
+  } catch(e){
+    dlog('trim-export', { ok: false, err: (e && e.message) || String(e) });
+    toast(L[LANG].trimErr);
+    if (S.url) dl(S.url, S.filename);
+  } finally {
+    TR.exporting = false; btn.disabled = false; updTrimBtn();
+  }
+}
+
+els.save.onclick = async () => {
+  if (!S.url) return;
+  if (TR.trimmed && !TR.exporting){ await exportTrim(); return; }
+  dl(S.url, S.filename || ('castlens.' + S.mime.ext));
 };
+$('btnFull').onclick = () => { if (S.url) dl(S.url, S.filename); };
 
 /* permission guide card */
 const IS_MAC = /Mac/i.test((navigator.platform || '') + ' ' + navigator.userAgent);
@@ -749,7 +1139,7 @@ $('pcRe').onclick = async () => {
 };
 
 window.addEventListener('beforeunload', e => {
-  if (S.state === 'recording' || S.state === 'paused'){ e.preventDefault(); e.returnValue = ''; }
+  if (S.state === 'recording' || S.state === 'paused' || S.state === 'layout'){ e.preventDefault(); e.returnValue = ''; }
 });
 
 /* ============ init ============ */
@@ -772,7 +1162,7 @@ function init(){
 init();
 
 /* debug handle for automated tests */
-window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; },
+window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; }, TR, get S(){ return S; }, setTrim:(a,b)=>{ TR.in=a; TR.out=b; TR.trimmed=(TR.dur-(b-a))>0.05; renderTrim(); updTrimBtn(); },
   diag(){ return { state: S.state, reason: S.stopReason, elapsed: S.state === 'recording' || S.state === 'paused' ? Math.round(elapsedSec()*10)/10 : S.finalDur, log: S.log.slice() }; } };
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
