@@ -293,6 +293,9 @@ const L = {
     toastCancel:'Screen capture was cancelled — nothing recorded.',
     toastMicFail:'Microphone unavailable — recording without mic.',
     toastNoSys:'System audio wasn\'t returned by the browser (macOS needs Chrome 141+). Sharing a tab still captures its audio.',
+    toastEmbed:'Screen capture isn\'t available in this browser or embedded webview (e.g. an in-app browser). Open CastLens in a standalone Chrome, Edge, or Safari window.',
+    toastRecErr:'Recording hit an error and stopped. Try again — if it keeps happening, reload the page.',
+    toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
     howT:'How it works',
     s1t:'Choose what to capture', s1d:'Click Record, then pick a screen, an app window, or a Chrome tab in the browser prompt.',
     s2t:'Record with optional audio', s2d:'Toggle your microphone or system audio before you start. Pause and resume any time.',
@@ -328,6 +331,9 @@ const L = {
     toastCancel:'已取消屏幕选择，未录制任何内容。',
     toastMicFail:'麦克风不可用，将以无麦克风方式录制。',
     toastNoSys:'浏览器未返回系统声音（macOS 需 Chrome 141+）。共享标签页时仍会带上标签页声音。',
+    toastEmbed:'当前环境不支持屏幕捕获（比如应用内置浏览器）。请用独立的 Chrome / Edge / Safari 窗口打开 CastLens 再录。',
+    toastRecErr:'录制出现错误已停止，请重试；若反复出现请刷新页面。',
+    toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
     howT:'使用方法',
     s1t:'选择录制对象', s1d:'点击开始录制，在浏览器弹窗里选择整个屏幕、某个应用窗口或某个标签页。',
     s2t:'按需开启声音', s2d:'开始前可打开麦克风或系统声音，录制中随时暂停、继续。',
@@ -481,8 +487,10 @@ async function startFlow(){
       });
     } catch(e){
       cleanupStreams();
-      if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) toast(L[LANG].toastCancel);
-      else toast(e && e.message ? e.message : L[LANG].unsupported);
+      const name = e && e.name, msg = (e && e.message) || '';
+      if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
+      else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
+      else toast(msg || L[LANG].unsupported);
       return;
     }
     if ($('optSys').checked && S.screen.getAudioTracks().length === 0 && !S.mic) toast(L[LANG].toastNoSys);
@@ -500,6 +508,7 @@ async function startFlow(){
     S.rec = new MediaRecorder(stream, { mimeType: mime.mime, videoBitsPerSecond: 8000000 });
     S.rec.ondataavailable = e => { if (e.data && e.data.size) S.chunks.push(e.data); };
     S.rec.onstop = finalize;
+    S.rec.onerror = () => { toast(L[LANG].toastRecErr); stopRecording(); };
 
     if ($('optCd').checked){
       setState('countdown'); els.st.textContent = L[LANG].stCount;
@@ -534,8 +543,9 @@ function stopRecording(){
 function finalize(){
   cleanupStreams();
   stopTick();
-  setState('review');
   const blob = new Blob(S.chunks, { type: (S.rec && S.rec.mimeType) || S.mime.mime });
+  if (!blob.size){ toast(L[LANG].toastEmpty); S.chunks = []; setState('idle'); return; }
+  setState('review');
   S.blob = blob;
   if (S.url) URL.revokeObjectURL(S.url);
   S.url = URL.createObjectURL(blob);
