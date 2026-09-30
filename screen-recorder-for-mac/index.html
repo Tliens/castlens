@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screen Recorder for Mac — Browser-Based, No App Install | CastLens</title>
+<meta name="description" content="Free screen recorder for macOS: works in Chrome and Safari, supports region capture, webcam overlay and system audio. Covers the macOS screen-recording permission step by step.">
+<link rel="canonical" href="https://castlens.kuige.me/screen-recorder-for-mac/">
+<link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-for-mac/">
+<link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh">
+<link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-for-mac/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CastLens">
+<meta property="og:title" content="Screen Recorder for Mac — Browser-Based, No App Install | CastLens">
+<meta property="og:description" content="Free screen recorder for macOS: works in Chrome and Safari, supports region capture, webcam overlay and system audio. Covers the macOS screen-recording permission step by step.">
+<meta property="og:url" content="https://castlens.kuige.me/screen-recorder-for-mac/">
+<meta property="og:image" content="https://castlens.kuige.me/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Screen Recorder for Mac — Browser-Based, No App Install | CastLens">
+<meta name="twitter:description" content="Free screen recorder for macOS: works in Chrome and Safari, supports region capture, webcam overlay and system audio. Covers the macOS screen-recording permission step by step.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Screen Recorder for Mac — Browser-Based, No App Install | CastLens", "url": "https://castlens.kuige.me/screen-recorder-for-mac/", "description": "Free screen recorder for macOS: works in Chrome and Safari, supports region capture, webcam overlay and system audio. Covers the macOS screen-recording permission step by step.", "inLanguage": "en", "isPartOf": {"@type": "WebSite", "name": "CastLens", "url": "https://castlens.kuige.me/"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does it work in Safari on Mac?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — Safari supports screen recording via the same standard API, outputs MP4, and needs the same one-time Screen Recording permission. Chrome and Edge work equally well; Firefox on macOS saves WebM."}}, {"@type": "Question", "name": "Why is my DRM video (Netflix, etc.) recorded black?", "acceptedAnswer": {"@type": "Answer", "text": "Content protection intentionally blocks capture of protected video paths — this applies to every recorder on macOS, including OBS and QuickTime. Non-DRM content (your own apps, tabs, most sites) records normally."}}, {"@type": "Question", "name": "How do I fix \"recording fails silently\" on macOS?", "acceptedAnswer": {"@type": "Answer", "text": "That's the permission quirk: macOS asks once and never re-prompts. Toggle the browser's Screen Recording switch off and on in System Settings → Privacy & Security, then fully quit (⌘Q) and reopen the browser. This site detects the failure and walks you through it."}}, {"@type": "Question", "name": "Is Retina quality preserved?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Capture runs at the display's native resolution, and region sizes are exact in output pixels — a 1440×900 region on a 2× display yields a 1440×900 video (crisp, since the source was 2880×1800)."}}, {"@type": "Question", "name": "Does it work on Apple Silicon?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, M-series and Intel Macs behave identically — encoding uses the same MediaRecorder pipeline Chrome provides on both. Hardware encoding keeps fan noise low on M-chips even at 1080p30."}}]}</script>
+<style>:root{--bg:#faf6ee;--card:#fffdf8;--ink:#2b2320;--mut:#7a6f66;--accent:#bc4b2c;--line:rgba(43,35,32,.13)}
+html.dark{--bg:#171210;--card:#211a15;--ink:#f0e8dd;--mut:#a89a8c;--accent:#e06a45;--line:rgba(240,232,221,.13)}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;transition:background .25s,color .25s}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line))}
+.top .wrap{display:flex;align-items:center;gap:12px;height:54px}
+.brand{font-weight:700;font-size:16px;color:var(--ink);text-decoration:none}
+.kuige-entry{color:var(--mut);text-decoration:none;font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:99px;margin-left:auto}
+.kuige-entry:hover{color:var(--accent);border-color:var(--accent)}
+.langbtn{background:none;border:1px solid var(--line);border-radius:9px;color:var(--mut);font-size:13px;padding:4px 10px;cursor:pointer}
+.langbtn:hover{color:var(--accent);border-color:var(--accent)}
+.hero{padding:52px 0 8px}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1{font-size:clamp(26px,4.6vw,38px);line-height:1.25;margin:0 0 14px;letter-spacing:-.4px}
+.lead{font-size:16.5px;color:var(--mut);max-width:640px;margin:0 auto}
+.cta{display:inline-block;margin-top:22px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:15.5px;padding:13px 30px;border-radius:12px}
+.cta:hover{filter:brightness(1.08)}
+.blk{padding:34px 0 4px}
+h2{font-size:21px;margin:0 0 10px}
+.blk p{color:var(--mut);font-size:15px;margin:0 0 6px;text-align:left}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600;font-size:15px}
+details p{color:var(--mut);font-size:14px;margin:10px 0 0}
+.rel{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 10px}
+.rel a{color:var(--mut);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:13px}
+.rel a:hover{color:var(--accent);border-color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:44px;padding:24px 0 32px;text-align:center;color:var(--mut);font-size:13px}
+footer a{color:var(--mut)}
+.hero,.blk,.rel,footer .cn{text-align:center}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/">▣ CastLens</a>
+  <a class="kuige-entry" href="https://kuige.me/" target="_blank" rel="noopener" title="kuige.me" style="text-decoration:none">魁歌 · 独立开发者</a>
+  <button class="langbtn" id="langBtn">中文</button>
+</div></header>
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow" data-zh="免费在线录屏">Free Online Screen Recorder</p>
+    <h1 data-zh="Mac 录屏，就在浏览器里，什么都不用装">Screen Recorder for Mac — In the Browser, Nothing to Install</h1>
+    <p class="lead" data-zh="macOS 有 QuickTime，OBS 也免费——为什么还要浏览器录屏？因为「录一下这个标签页、发个文件」这种 30 秒的活，开个网址比配置一个 App 划算得多。区域选择、摄像头画中画、暂停续录、一键裁剪全都带着，用完机器上不留任何安装。">macOS already has QuickTime, and OBS is free — so why a browser recorder? Because for the 30-second job (&quot;record this tab, send the file&quot;), opening a URL beats setting up an app. Region selection, webcam overlay, pause &amp; resume and trim come along for free, and nothing stays installed when you're done.</p>
+    <a class="cta" href="/" data-zh="打开 CastLens 开始录制">Open CastLens and record now</a>
+  </section>
+  <section class="blk">
+      <div class="card">
+        <h2 data-zh="唯一的设置步骤：屏幕录制授权">The one setup step: Screen Recording permission</h2>
+        <p data-zh="macOS 要求给浏览器本身授一次「屏幕录制」权限。首次录制时系统会询问；但如果那次弹窗被忽略，macOS 会永远沉默、捕获静默失败。修法：系统设置 → 隐私与安全性 → 屏幕录制 → 打开你的浏览器（看着已开就关掉再开一次），然后完全退出并重开浏览器——授权只对全新启动的进程生效。">macOS requires you to grant Screen Recording to the browser itself, once. When you first record, the system asks; if that prompt was ever dismissed, macOS stays silent forever and captures fail quietly. Fix: System Settings → Privacy &amp; Security → Screen Recording → enable your browser (toggle off/on if it looks enabled), then fully quit and reopen it — the grant only applies to freshly started apps.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="macOS 上的声音：一张诚实的对照表">Audio on macOS: the honest matrix</h2>
+        <p data-zh="标签页声音永远可用——共享 Chrome 标签页即带声音。整系统声音需要 Chrome 141+ 且 macOS 14.2+（选「整个屏幕」并在选择器里勾选声音）。Safari 可以屏幕+麦克风；要整系统声音仍需虚拟声卡。Windows 没有这些讲究。">Tab audio always works — share a Chrome tab and its sound is captured. Whole-system audio needs Chrome 141+ on macOS 14.2+ (choose &quot;Entire screen&quot; and enable audio in the picker). Safari records the screen with microphone; full system audio there still needs a virtual audio device. Windows has none of these wrinkles.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="Retina、区域与悬浮控制台">Retina, regions and the floating console</h2>
+        <p data-zh="Retina 屏上捕获是全分辨率的；区域选择器按源像素工作，「1000×600」的框在成品里就是这个尺寸。画选区时，一个置顶小窗浮在你真实屏幕上方——对着真实内容取景，之后录制、暂停、停止都在这个悬浮面板里完成，不用切回网站。">On Retina displays the capture is full-resolution; the region selector works in source pixels, so a &quot;1000×600&quot; region is exactly that in the output file. While you draw the region, a small always-on-top window floats above your actual screen — you frame the real content, then record, pause and stop from that same floating panel without coming back to the website.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="什么时候用 QuickTime、OBS、或它">When to use QuickTime, OBS, or this</h2>
+        <p data-zh="QuickTime：零功能、永远在，只录全屏凑合够用。OBS：场景、叠加层、直播——常干这些的人值得配置。浏览器录屏：从「我要录一下」到拿到裁好的文件的最快路径，事后零安装。大多数 Mac 用户 90% 的场景要的是第三个。">QuickTime: zero features, always there, fine for full-screen-only captures. OBS: scenes, overlays, streaming — worth its setup time when you do that regularly. A browser recorder: fastest path from &quot;I need this recorded&quot; to a trimmed file, with nothing installed afterwards. Most Mac users need the third one 90% of the time.</p>
+      </div>
+  </section>
+  <section class="blk">
+    <h2 data-zh="常见问题">FAQ</h2>
+      <details><summary data-zh="Mac 的 Safari 能用吗？">Does it work in Safari on Mac?</summary><p data-zh="可以——Safari 支持同一套标准录屏 API，产出 MP4，同样只需一次性屏幕录制授权。Chrome 和 Edge 同样好用；macOS 上的 Firefox 存 WebM。">Yes — Safari supports screen recording via the same standard API, outputs MP4, and needs the same one-time Screen Recording permission. Chrome and Edge work equally well; Firefox on macOS saves WebM.</p></details>
+      <details><summary data-zh="为什么录 Netflix 这类 DRM 视频是黑屏？">Why is my DRM video (Netflix, etc.) recorded black?</summary><p data-zh="内容保护机制有意阻断受保护视频通路的捕获——macOS 上所有录屏工具都一样，包括 OBS 和 QuickTime。非 DRM 内容（你自己的应用、标签页、大多数网站）都正常录。">Content protection intentionally blocks capture of protected video paths — this applies to every recorder on macOS, including OBS and QuickTime. Non-DRM content (your own apps, tabs, most sites) records normally.</p></details>
+      <details><summary data-zh="macOS 上「静默录不上」怎么修？">How do I fix &quot;recording fails silently&quot; on macOS?</summary><p data-zh="这就是那个授权怪癖：macOS 只问一次、不再重弹。到 系统设置 → 隐私与安全性 把浏览器的屏幕录制开关关掉再打开，然后 ⌘Q 完全退出并重开浏览器。本站检测到这种失败时会一步步引导你修。">That's the permission quirk: macOS asks once and never re-prompts. Toggle the browser's Screen Recording switch off and on in System Settings → Privacy &amp; Security, then fully quit (⌘Q) and reopen the browser. This site detects the failure and walks you through it.</p></details>
+      <details><summary data-zh="Retina 画质有损失吗？">Is Retina quality preserved?</summary><p data-zh="没有。捕获按显示器原生分辨率进行，区域尺寸在成品里逐像素精确——2× 屏上选 1440×900，成品就是 1440×900（源是 2880×1800，所以非常锐利）。">Yes. Capture runs at the display's native resolution, and region sizes are exact in output pixels — a 1440×900 region on a 2× display yields a 1440×900 video (crisp, since the source was 2880×1800).</p></details>
+      <details><summary data-zh="Apple 芯片的 Mac 能用吗？">Does it work on Apple Silicon?</summary><p data-zh="可以，M 系列和 Intel Mac 行为一致——两者都用 Chrome 提供的同一套 MediaRecorder 管线。M 芯片上硬件编码让 1080p30 也几乎不转风扇。">Yes, M-series and Intel Macs behave identically — encoding uses the same MediaRecorder pipeline Chrome provides on both. Hardware encoding keeps fan noise low on M-chips even at 1080p30.</p></details>
+  </section>
+  <section class="blk">
+    <h2 data-zh="相关指南">Related guides</h2>
+    <div class="rel"><a href="/private-screen-recorder/" data-zh="私密录屏">Private screen recorder</a><a href="/screen-recorder-no-upload/" data-zh="无上传录屏">Screen recorder, no upload</a><a href="/screen-recorder-with-audio/" data-zh="带声音的录屏">Screen recorder with audio</a></div>
+  </section>
+</main>
+<footer>
+  <div class="wrap">
+    <p class="cn">本站代号：画壁 — 壁上作画，画中人动；屏幕即画壁，帧帧入片。</p>
+    <p><a href="/">CastLens</a> · © 2026 魁歌 KuiGe</p>
+  </div>
+</footer>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search).get('lang');
+  var saved = null; try{ saved = localStorage.getItem('castlens-lang'); }catch(e){}
+  var lang = q || saved || ((navigator.language||'en').toLowerCase().indexOf('zh')===0 ? 'zh' : 'en');
+  var META = {};
+  function apply(l){
+    lang = (l === 'zh') ? 'zh' : 'en';
+    document.documentElement.lang = lang;
+    document.title = META.title[lang];
+    var md = document.querySelector('meta[name="description"]');
+    if (md) md.setAttribute('content', META.desc[lang]);
+    document.querySelectorAll('[data-zh]').forEach(function(el){
+      var cur = el.textContent, zh = el.getAttribute('data-zh');
+      if (lang === 'zh'){ el.setAttribute('data-en', cur); el.textContent = zh; }
+      else { var en = el.getAttribute('data-en'); if (en != null) el.textContent = en; }
+    });
+    var b = document.getElementById('langBtn');
+    if (b) b.textContent = (lang === 'en') ? '中文' : 'EN';
+    try{ localStorage.setItem('castlens-lang', lang); }catch(e){}
+    var u = new URL(location.href);
+    if (lang === 'zh') u.searchParams.set('lang','zh'); else u.searchParams.delete('lang');
+    history.replaceState(null, '', u);
+  }
+  window.__applyLang = apply;
+  document.getElementById('langBtn').addEventListener('click', function(){ apply(lang === 'en' ? 'zh' : 'en'); });
+  window.__setMeta = function(t, d){ META.title = t; META.desc = d; apply(q || saved || ((navigator.language||'en').toLowerCase().indexOf('zh')===0 ? 'zh' : 'en')); };
+})();
+__setMeta({ "en": "Screen Recorder for Mac — Browser-Based, No App Install | CastLens", "zh": "Mac 录屏工具 — 浏览器直接录，无需装 App | CastLens" }, { "en": "Free screen recorder for macOS: works in Chrome and Safari, supports region capture, webcam overlay and system audio. Covers the macOS screen-recording permission step by step.", "zh": "macOS 免费录屏：Chrome 与 Safari 可用，支持区域录制、摄像头画中画与系统声音。macOS 屏幕录制授权一步步讲清。" });
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
+</body>
+</html>

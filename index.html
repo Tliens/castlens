@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CastLens — The Free Online Screen Recorder That Feels Pro</title>
-<meta name="description" content="Region capture, webcam picture-in-picture, one-tap trim, MP4 export — a pro-grade screen recorder that lives in a tab. No install, no signup, nothing uploaded.">
+<title>Free Online Screen Recorder — No Upload, No Signup | CastLens</title>
+<meta name="description" content="Record your screen, window, or browser tab online for free. No upload, no signup, no watermark. Your recordings stay on your device.">
 <link rel="canonical" href="https://castlens.kuige.me/">
 <link rel="alternate" hreflang="en" href="https://castlens.kuige.me/">
 <link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/?lang=zh">
 <link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CastLens">
-<meta property="og:title" content="CastLens — The Free Online Screen Recorder That Feels Pro">
-<meta property="og:description" content="Region capture, webcam PiP, one-tap trim, MP4 export — everything the desktop pros charge for, in a tab. Nothing installs, nothing uploads.">
+<meta property="og:title" content="Free Online Screen Recorder — No Upload, No Signup | CastLens">
+<meta property="og:description" content="Record your screen, window, or browser tab online for free. No upload, no signup, no watermark. Your recordings stay on your device.">
 <meta property="og:url" content="https://castlens.kuige.me/">
 <meta property="og:image" content="https://castlens.kuige.me/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CastLens — The Free Online Screen Recorder That Feels Pro">
-<meta name="twitter:description" content="Region capture, webcam PiP, one-tap trim, MP4 export — in a tab. Nothing installs, nothing uploads.">
+<meta name="twitter:title" content="Free Online Screen Recorder — No Upload, No Signup | CastLens">
+<meta name="twitter:description" content="Record your screen, window, or browser tab online for free. No upload, no signup, no watermark.">
 <meta name="twitter:image" content="https://castlens.kuige.me/og-image.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3Crect x='24' y='48' width='16' height='3' rx='1.5' fill='%23a89a8c'/%3E%3C/svg%3E">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"CastLens","url":"https://castlens.kuige.me/","applicationCategory":"MultimediaApplication","operatingSystem":"Any desktop browser","description":"A pro-grade online screen recorder that lives in a tab: region capture with a floating always-on-top console, webcam picture-in-picture, pause & resume, one-tap trim, MP4/WebM export. No install, no signup — nothing is ever uploaded.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Record screen, window or browser tab","MP4 output on Chrome 126+ / Edge / Safari","Microphone and system audio mixing","Pause and resume with 3-second countdown","Files never leave your device"],"inLanguage":["en","zh"]}
+{"@context":"https://schema.org","@type":"WebApplication","name":"CastLens","url":"https://castlens.kuige.me/","applicationCategory":"MultimediaApplication","operatingSystem":"Any desktop browser","description":"Free online screen recorder: capture your screen, a window, or a browser tab with region selection, webcam picture-in-picture, pause & resume, and one-tap trim. No upload, no signup, no watermark — recordings stay on your device.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Record screen, window or browser tab","MP4 output on Chrome 126+ / Edge / Safari","Microphone and system audio mixing","Pause and resume with 3-second countdown","Files never leave your device"],"inLanguage":["en","zh"]}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
@@ -67,6 +67,7 @@ nav.main{display:flex;align-items:center;gap:16px;margin-left:auto}
 .iconbtn:hover{color:var(--accent);border-color:var(--accent)}
 /* hero */
 .hero{text-align:center;padding:54px 0 26px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
 .badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
 .badge{font-size:13px;color:var(--accent);border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 13px}
 h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing:-.5px}
@@ -130,6 +131,14 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 #trimIn{border-radius:6px 2px 2px 6px}#trimOut{border-radius:2px 6px 6px 2px}
 .trim-meta{font-size:12.5px;color:var(--mut);margin-top:6px;text-align:center}
 
+/* private by design */
+.pvcard{padding:28px;margin-top:6px;border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+.pv-head{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+.pv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.pv-item{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px}
+.pv-item h3{margin:0 0 6px;font-size:15px}
+.pv-item p{margin:0;color:var(--mut);font-size:13.5px}
+
 /* permission modal */
 .pcm{position:fixed;inset:0;background:rgba(10,8,6,.66);backdrop-filter:blur(3px);z-index:140;display:flex;align-items:center;justify-content:center;padding:20px}
 .pcm-box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px 22px;max-width:460px;width:100%;box-shadow:0 18px 60px rgba(0,0,0,.35);position:relative}
@@ -164,6 +173,9 @@ details p{color:var(--mut);font-size:14.5px;margin:10px 0 0}
 /* footer */
 footer{border-top:1px solid var(--line);margin-top:52px;padding:26px 0 34px;text-align:center;color:var(--mut);font-size:13.5px}
 footer .cn{margin-bottom:6px}
+footer .guides{font-size:12.5px}
+footer .guides a{color:var(--mut);text-decoration:none;border-bottom:1px dotted var(--line)}
+footer .guides a:hover{color:var(--accent)}
 /* toast */
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:11px;font-size:14px;max-width:min(92vw,560px);z-index:120;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 /* countdown overlay */
@@ -196,6 +208,7 @@ footer .cn{margin-bottom:6px}
     </a>
     <nav class="main">
       <a class="navlink" href="#how" data-i18n="navHow">How it works</a>
+      <a class="navlink" href="#privacy" data-i18n="navPrivacy">Privacy</a>
       <a class="navlink" href="#faq" data-i18n="navFaq">FAQ</a>
       <a class="kuige-entry" href="https://kuige.me/" target="_blank" rel="noopener" title="kuige.me" style="text-decoration:none">魁歌 · 独立开发者</a>
       <button class="iconbtn" id="btnLang" title="中文 / English">中文</button>
@@ -212,7 +225,8 @@ footer .cn{margin-bottom:6px}
       <span class="badge" data-i18n="b2">No signup</span>
       <span class="badge" data-i18n="b3">Free to use</span>
     </div>
-    <h1 data-i18n="h1">Free Online Screen Recorder</h1>
+    <p class="eyebrow" data-i18n="eyebrow">Free Online Screen Recorder</p>
+    <h1 data-i18n="h1">Private Screen Recording, Right in Your Browser</h1>
     <p class="sub" data-i18n="sub">Record your screen, an app window, or a browser tab — right in your browser. The video never leaves your device.</p>
   </section>
 
@@ -317,6 +331,24 @@ footer .cn{margin-bottom:6px}
     </div>
   </section>
 
+  <section id="privacy" class="blk">
+    <div class="pvcard card">
+      <div class="pv-head">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5l-8-3Z" stroke="var(--accent)" stroke-width="1.7" stroke-linejoin="round"/><path d="m8.8 12 2.2 2.2 4.4-4.4" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <h2 style="margin:0" data-i18n="pvT">Private by design</h2>
+          <p style="margin:2px 0 0;color:var(--mut);font-size:13.5px" data-i18n="pvS">Not a policy promise — an architectural fact.</p>
+        </div>
+      </div>
+      <div class="pv-grid">
+        <div class="pv-item"><h3 data-i18n="pv1t">There is no server to leak</h3><p data-i18n="pv1d">CastLens is a static page. Recording happens inside your browser and the file goes from memory straight to your disk — no upload endpoint exists in the code.</p></div>
+        <div class="pv-item"><h3 data-i18n="pv2t">Your video never leaves the device</h3><p data-i18n="pv2d">The recording lives in a browser blob until you press Download. Close the tab and it's gone — nothing persists anywhere but the file you chose to save.</p></div>
+        <div class="pv-item"><h3 data-i18n="pv3t">Works offline once loaded</h3><p data-i18n="pv3d">After the page loads, you can cut the network and record as usual. A tool that records with Wi-Fi off can't be uploading your screen.</p></div>
+        <div class="pv-item"><h3 data-i18n="pv4t">Verify it yourself</h3><p data-i18n="pv4d">Open DevTools → Network before you record and watch it stay silent. Don't take our word for it — check the packets.</p></div>
+      </div>
+    </div>
+  </section>
+
   <section id="faq" class="blk">
     <h2 data-i18n="faqT">FAQ</h2>
     <details><summary data-i18n="q1">Is CastLens free?</summary><p data-i18n="a1">Yes — free to use, no signup, no watermark, no time limit.</p></details>
@@ -333,6 +365,12 @@ footer .cn{margin-bottom:6px}
   <div class="wrap">
     <p class="cn" id="cnLine">本站代号：画壁 — 壁上作画，画中人动；屏幕即画壁，帧帧入片。</p>
     <p id="cnLineEn">Codename "Huabi" (the Painted Wall): figures on the wall come alive — your screen becomes the wall, frame by frame.</p>
+    <p class="guides" id="guidesRow">
+      <a href="/private-screen-recorder/">Private screen recorder</a> ·
+      <a href="/screen-recorder-no-upload/">Screen recorder no upload</a> ·
+      <a href="/screen-recorder-for-mac/">Screen recorder for Mac</a> ·
+      <a href="/screen-recorder-with-audio/">Screen recorder with audio</a>
+    </p>
     <p>© 2026 魁歌 KuiGe · CastLens</p>
   </div>
 </footer>
@@ -379,7 +417,14 @@ const L = {
   en: {
     navHow:'How it works', navFaq:'FAQ',
     b1:'Region · Webcam · Trim', b2:'No upload', b3:'No signup · No watermark',
-    h1:'The Online Screen Recorder That Feels Pro',
+    h1:'Private Screen Recording, Right in Your Browser',
+    eyebrow:'Free Online Screen Recorder',
+    navPrivacy:'Privacy',
+    pvT:'Private by design', pvS:'Not a policy promise — an architectural fact.',
+    pv1t:'There is no server to leak', pv1d:'CastLens is a static page. Recording happens inside your browser and the file goes from memory straight to your disk — no upload endpoint exists in the code.',
+    pv2t:'Your video never leaves the device', pv2d:"The recording lives in a browser blob until you press Download. Close the tab and it's gone — nothing persists anywhere but the file you chose to save.",
+    pv3t:'Works offline once loaded', pv3d:"After the page loads, you can cut the network and record as usual. A tool that records with Wi-Fi off can't be uploading your screen.",
+    pv4t:'Verify it yourself', pv4d:"Open DevTools → Network before you record and watch it stay silent. Don't take our word for it — check the packets.",
     sub:'Region capture, webcam picture-in-picture, pause & resume, one-tap trim, MP4 export — everything the desktop pros charge for, in a browser tab. Nothing installs. Nothing uploads. Possibly the world\'s second-best screen recorder — definitely the best one that opens in one click.',
     unsupported:"Your browser doesn't support screen recording. Please use desktop Chrome, Edge, Safari, or Firefox.",
     micLabel:'Microphone', sysLabel:'System audio', cdLabel:'3s countdown',
@@ -439,13 +484,20 @@ const L = {
     q3:'Can I record system audio on macOS?', a3:'Yes on Chrome 141 or newer with macOS 14.2+. On older versions, macOS only allows tab audio — share a Chrome tab and its sound will be captured. Windows supports system audio.',
     q4:'Will I get an MP4 file?', a4:'On Chrome 126+, Edge, and Safari the recording is saved as MP4 (H.264), ready for any platform. Firefox saves WebM — most platforms accept it, or convert it to MP4 afterwards.',
     q5:'Which browsers and devices are supported?', a5:'Desktop Chrome, Edge, Brave, Safari 16+, and Firefox. Mobile browsers don\'t allow screen sharing, so CastLens needs a desktop browser.',
-    title:'CastLens — The Free Online Screen Recorder That Feels Pro',
-    desc:'Region capture, webcam picture-in-picture, one-tap trim, MP4 export — a pro-grade screen recorder that lives in a tab. No install, no signup, nothing uploaded.',
+    title:'Free Online Screen Recorder — No Upload, No Signup | CastLens',
+    desc:'Record your screen, window, or browser tab online for free. No upload, no signup, no watermark. Your recordings stay on your device.',
   },
   zh: {
     navHow:'使用方法', navFaq:'常见问题',
     b1:'区域·画中画·裁剪', b2:'视频不上传', b3:'免注册·无水印',
-    h1:'免费在线录屏，好用得不像网页版',
+    h1:'私密录屏，就在你的浏览器里',
+    eyebrow:'免费在线录屏工具',
+    navPrivacy:'隐私',
+    pvT:'隐私是架构，不是承诺', pvS:'不是隐私政策里的一句话，是代码结构本身决定的。',
+    pv1t:'没有可泄露的服务器', pv1d:'CastLens 是纯静态页面，录制发生在你的浏览器内，文件从内存直接落盘——代码里根本不存在上传端点。',
+    pv2t:'视频始终不离设备', pv2d:'录制内容只存在于浏览器的内存里，直到你点下载。关掉标签页即消失——除你主动保存的文件外，任何地方都不会留痕。',
+    pv3t:'加载后可断网录制', pv3d:'页面加载完成后，断开网络照样录。一个断着 Wi-Fi 还能录屏的工具，不可能在上传你的屏幕。',
+    pv4t:'欢迎亲自验证', pv4d:'录制前打开开发者工具的 Network 面板，看它保持安静。不用信我们的口头承诺，看数据包。',
     sub:'区域框选、摄像头画中画、暂停续录、一键裁剪、MP4 导出——桌面付费工具的本事，一个标签页全干了。不装软件，不上传云端。可能是世界第二好用的录屏工具——但一点开就能用的那个，就是它。',
     unsupported:'当前浏览器不支持屏幕录制，请使用桌面版 Chrome / Edge / Safari / Firefox。',
     micLabel:'麦克风', sysLabel:'系统声音', cdLabel:'3 秒倒计时',
@@ -505,8 +557,8 @@ const L = {
     q3:'macOS 上能录系统声音吗？', a3:'可以，需要 Chrome 141 及以上且 macOS 14.2+。旧版本 macOS 只允许标签页声音——共享一个 Chrome 标签页即可录到它的声音。Windows 支持系统声音。',
     q4:'能得到 MP4 文件吗？', a4:'Chrome 126+、Edge、Safari 会直接保存为 MP4（H.264），任何平台都能用；Firefox 保存为 WebM，多数平台也接受，或事后转成 MP4。',
     q5:'支持哪些浏览器和设备？', a5:'桌面版 Chrome、Edge、Brave、Safari 16+、Firefox。手机浏览器不支持屏幕共享，因此需要桌面浏览器。',
-    title:'CastLens — 免费在线录屏 · 区域·画中画·裁剪·不上传',
-    desc:'区域录制、摄像头画中画、暂停续录、一键裁剪、MP4 导出——专业录屏能力，浏览器直接用。免安装免注册，视频不上传。',
+    title:'免费在线录屏 — 视频不上传 · 免注册 | CastLens',
+    desc:'免费在线录屏：屏幕、窗口或标签页，浏览器直接录。视频不上传、免注册、无水印，录制始终留在你的设备上。',
   }
 };
 const $ = id => document.getElementById(id);

@@ -10,10 +10,74 @@
   </url>
   <url>
     <loc>https://castlens.kuige.me/?lang=zh</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/?lang=zh"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/?lang=zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/?lang=zh/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/?lang=zh/"/>
     <lastmod>2026-09-30</lastmod>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/private-screen-recorder/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/private-screen-recorder/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/private-screen-recorder/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/private-screen-recorder/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/private-screen-recorder/?lang=zh</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/private-screen-recorder/?lang=zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/private-screen-recorder/?lang=zh/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/private-screen-recorder/?lang=zh/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-no-upload/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-no-upload/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-no-upload/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-no-upload/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-no-upload/?lang=zh</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-no-upload/?lang=zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-no-upload/?lang=zh/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-no-upload/?lang=zh/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-for-mac/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-for-mac/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-for-mac/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-for-mac/?lang=zh/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-with-audio/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-with-audio/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-with-audio/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-with-audio/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://castlens.kuige.me/screen-recorder-with-audio/?lang=zh</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://castlens.kuige.me/screen-recorder-with-audio/?lang=zh/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/screen-recorder-with-audio/?lang=zh/?lang=zh"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/screen-recorder-with-audio/?lang=zh/"/>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.7</priority>
   </url>
 </urlset>

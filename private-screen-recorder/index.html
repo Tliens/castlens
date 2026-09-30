@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private Screen Recorder — Nothing Leaves Your Device | CastLens</title>
+<meta name="description" content="A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.">
+<link rel="canonical" href="https://castlens.kuige.me/private-screen-recorder/">
+<link rel="alternate" hreflang="en" href="https://castlens.kuige.me/private-screen-recorder/">
+<link rel="alternate" hreflang="zh" href="https://castlens.kuige.me/private-screen-recorder/?lang=zh">
+<link rel="alternate" hreflang="x-default" href="https://castlens.kuige.me/private-screen-recorder/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CastLens">
+<meta property="og:title" content="Private Screen Recorder — Nothing Leaves Your Device | CastLens">
+<meta property="og:description" content="A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.">
+<meta property="og:url" content="https://castlens.kuige.me/private-screen-recorder/">
+<meta property="og:image" content="https://castlens.kuige.me/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Private Screen Recorder — Nothing Leaves Your Device | CastLens">
+<meta name="twitter:description" content="A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Private Screen Recorder — Nothing Leaves Your Device | CastLens", "url": "https://castlens.kuige.me/private-screen-recorder/", "description": "A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.", "inLanguage": "en", "isPartOf": {"@type": "WebSite", "name": "CastLens", "url": "https://castlens.kuige.me/"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does CastLens really never upload anything?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — it is a static page with no backend. The recording is produced and encoded inside your browser and saved directly by you. You can verify this with the browser's Network panel while recording."}}, {"@type": "Question", "name": "Can my employer or network admin see my recordings?", "acceptedAnswer": {"@type": "Answer", "text": "Not through CastLens — there is nothing to intercept because nothing is transmitted. What happens on a managed device is governed by your device policy (screen monitoring, disk encryption), which applies equally to any installed app."}}, {"@type": "Question", "name": "Does it work offline?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, after the page has loaded once. Recording, pausing, stopping, and saving all work with the network disconnected — which is itself proof that nothing is being uploaded."}}, {"@type": "Question", "name": "What happens to the video when I close the tab?", "acceptedAnswer": {"@type": "Answer", "text": "It's gone. The unsaved recording exists only in the tab's memory. Unless you pressed Download, no copy exists anywhere — on this site or any other."}}, {"@type": "Question", "name": "Is a browser recorder as private as an installed app?", "acceptedAnswer": {"@type": "Answer", "text": "For recording privacy, yes — both capture and encode locally. An installed app additionally works without loading a website first; a browser tool has the advantage of zero install and nothing left on the machine afterwards. Pick based on workflow, not privacy."}}]}</script>
+<style>:root{--bg:#faf6ee;--card:#fffdf8;--ink:#2b2320;--mut:#7a6f66;--accent:#bc4b2c;--line:rgba(43,35,32,.13)}
+html.dark{--bg:#171210;--card:#211a15;--ink:#f0e8dd;--mut:#a89a8c;--accent:#e06a45;--line:rgba(240,232,221,.13)}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;transition:background .25s,color .25s}
+.wrap{max-width:820px;margin:0 auto;padding:0 20px}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line))}
+.top .wrap{display:flex;align-items:center;gap:12px;height:54px}
+.brand{font-weight:700;font-size:16px;color:var(--ink);text-decoration:none}
+.kuige-entry{color:var(--mut);text-decoration:none;font-size:13px;padding:4px 10px;border:1px solid var(--line);border-radius:99px;margin-left:auto}
+.kuige-entry:hover{color:var(--accent);border-color:var(--accent)}
+.langbtn{background:none;border:1px solid var(--line);border-radius:9px;color:var(--mut);font-size:13px;padding:4px 10px;cursor:pointer}
+.langbtn:hover{color:var(--accent);border-color:var(--accent)}
+.hero{padding:52px 0 8px}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1{font-size:clamp(26px,4.6vw,38px);line-height:1.25;margin:0 0 14px;letter-spacing:-.4px}
+.lead{font-size:16.5px;color:var(--mut);max-width:640px;margin:0 auto}
+.cta{display:inline-block;margin-top:22px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:15.5px;padding:13px 30px;border-radius:12px}
+.cta:hover{filter:brightness(1.08)}
+.blk{padding:34px 0 4px}
+h2{font-size:21px;margin:0 0 10px}
+.blk p{color:var(--mut);font-size:15px;margin:0 0 6px;text-align:left}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600;font-size:15px}
+details p{color:var(--mut);font-size:14px;margin:10px 0 0}
+.rel{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 10px}
+.rel a{color:var(--mut);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:13px}
+.rel a:hover{color:var(--accent);border-color:var(--accent)}
+footer{border-top:1px solid var(--line);margin-top:44px;padding:24px 0 32px;text-align:center;color:var(--mut);font-size:13px}
+footer a{color:var(--mut)}
+.hero,.blk,.rel,footer .cn{text-align:center}</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/">▣ CastLens</a>
+  <a class="kuige-entry" href="https://kuige.me/" target="_blank" rel="noopener" title="kuige.me" style="text-decoration:none">魁歌 · 独立开发者</a>
+  <button class="langbtn" id="langBtn">中文</button>
+</div></header>
+<main class="wrap">
+  <section class="hero">
+    <p class="eyebrow" data-zh="免费在线录屏">Free Online Screen Recorder</p>
+    <h1 data-zh="一台无法泄露你录屏的录屏机">A Screen Recorder That Can't Leak Your Recordings</h1>
+    <p class="lead" data-zh="大多数「在线」录屏工具其实是云端流水线：你的屏幕先被上传、存到某处，再以链接形式还给你。CastLens 把这个流程倒过来了——录制发生在你的浏览器标签页里，文件直接写进你的硬盘，另一端没有服务器在接收——因为这个网站根本没有服务器。">Most &quot;online&quot; screen recorders are cloud pipelines: your screen is uploaded first, stored somewhere, then handed back to you as a link. CastLens inverts that. Recording happens inside your browser tab, the file is written straight to your disk, and there is no server on the other end — because the site doesn't have one.</p>
+    <a class="cta" href="/" data-zh="打开 CastLens 开始录制">Open CastLens and record now</a>
+  </section>
+  <section class="blk">
+      <div class="card">
+        <h2 data-zh="录屏是怎么泄露的">Why screen recordings leak</h2>
+        <p data-zh="一旦录屏走上传链路，就有三个环节可能出事：传输本身（谁能在中途看到）、存储（存多久、谁能读）、访问控制（链接被猜到、分享设置错误、账号被盗）。未发布的产品、内部演示、屏幕上的客户数据——一个误分享的链接就全出去了。唯一可靠的解法，是从一开始就不把视频发往任何地方。">When a recorder uploads, three things can go wrong: the transfer itself (who sees it in transit), the storage (how long it sits there, who can read it), and access control (link guessing, sharing settings, breached accounts). Sensitive demos, unreleased products, customer data on screen — one mis-shared link and it's out. The only reliable fix is to never send the video anywhere in the first place.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="浏览器本地录制的原理">How browser-local recording works</h2>
+        <p data-zh="现代浏览器提供两个标准 API：getDisplayMedia() 把屏幕捕获成页面内的实时流，MediaRecorder 在内存里编码这条流。你点下载时，成品 blob 才被写成文件。这几个步骤之间不存在任何网络跳转——视频从来不会变成一个网络请求。">Modern browsers expose two standard APIs: getDisplayMedia() captures the screen into a live stream inside the page, and MediaRecorder encodes that stream in memory. When you press Download, the finished blob is written to a file. Between those steps there is no network hop — the video never becomes a request.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="给任何录屏工具做的 60 秒信任测试">A 60-second trust test for any recorder</h2>
+        <p data-zh="录任何敏感内容前，打开开发者工具的 Network 面板，点开始录制，盯着看。本地工具在页面加载后请求数为零。再翻翻它的隐私政策，找「处理」「留存」「改进我们的服务」这类词——每一个都意味着你的视频去了你控制不了的地方。">Before recording anything sensitive, open DevTools → Network, hit Record, and watch. A local recorder shows zero requests after page load. Then check the tool's privacy policy for words like &quot;processing&quot;, &quot;retention&quot;, and &quot;improve our services&quot; — each one means your video goes somewhere you don't control.</p>
+      </div>
+      <div class="card">
+        <h2 data-zh="什么时候必须用私密录屏">When private recording is the requirement</h2>
+        <p data-zh="未发布功能的内部演示、含用户数据的缺陷报告、财务界面、医疗或法务流程、敏感的管理后台，以及所有受保密协议或 GDPR 类规则约束的公司。如果这段内容放在别人的云里会出问题，它就不该碰任何云。">Internal demos of unreleased features, bug reports containing user data, financial screens, medical or legal workflows, security-sensitive admin panels, and any company bound by NDAs or GDPR-style rules. If the content would be a problem in someone else's cloud, it should never touch a cloud.</p>
+      </div>
+  </section>
+  <section class="blk">
+    <h2 data-zh="常见问题">FAQ</h2>
+      <details><summary data-zh="CastLens 真的什么都不上传吗？">Does CastLens really never upload anything?</summary><p data-zh="是的——它是纯静态页面，没有后端。录制的产生和编码都在你的浏览器内完成，由你自己保存。录制时打开浏览器的 Network 面板即可亲自验证。">Yes — it is a static page with no backend. The recording is produced and encoded inside your browser and saved directly by you. You can verify this with the browser's Network panel while recording.</p></details>
+      <details><summary data-zh="我的雇主或网络管理员能看到我的录制吗？">Can my employer or network admin see my recordings?</summary><p data-zh="通过 CastLens 不能——没有传输就没有可截获的东西。受管设备上的情况由设备策略决定（屏幕监控、磁盘加密），这对任何本地安装的软件同样适用。">Not through CastLens — there is nothing to intercept because nothing is transmitted. What happens on a managed device is governed by your device policy (screen monitoring, disk encryption), which applies equally to any installed app.</p></details>
+      <details><summary data-zh="断网能用吗？">Does it work offline?</summary><p data-zh="可以，页面加载过一次之后就行。录制、暂停、停止、保存在断网状态下全部可用——这本身就是不上传的证据。">Yes, after the page has loaded once. Recording, pausing, stopping, and saving all work with the network disconnected — which is itself proof that nothing is being uploaded.</p></details>
+      <details><summary data-zh="关掉标签页后视频会怎样？">What happens to the video when I close the tab?</summary><p data-zh="消失了。未保存的录制只存在于标签页内存里。只要没点过下载，任何地方——本站或其他任何地方——都不存在副本。">It's gone. The unsaved recording exists only in the tab's memory. Unless you pressed Download, no copy exists anywhere — on this site or any other.</p></details>
+      <details><summary data-zh="浏览器录屏和本地安装的软件一样私密吗？">Is a browser recorder as private as an installed app?</summary><p data-zh="就录制隐私而言是一样的——两者都在本地捕获和编码。本地软件的额外好处是无需先加载网站；浏览器工具的优势是零安装、事后机器上不留痕。按工作流选就好，隐私上没有差别。">For recording privacy, yes — both capture and encode locally. An installed app additionally works without loading a website first; a browser tool has the advantage of zero install and nothing left on the machine afterwards. Pick based on workflow, not privacy.</p></details>
+  </section>
+  <section class="blk">
+    <h2 data-zh="相关指南">Related guides</h2>
+    <div class="rel"><a href="/screen-recorder-no-upload/" data-zh="无上传录屏">Screen recorder, no upload</a><a href="/screen-recorder-for-mac/" data-zh="Mac 录屏指南">Screen recorder for Mac</a><a href="/screen-recorder-with-audio/" data-zh="带声音的录屏">Screen recorder with audio</a></div>
+  </section>
+</main>
+<footer>
+  <div class="wrap">
+    <p class="cn">本站代号：画壁 — 壁上作画，画中人动；屏幕即画壁，帧帧入片。</p>
+    <p><a href="/">CastLens</a> · © 2026 魁歌 KuiGe</p>
+  </div>
+</footer>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search).get('lang');
+  var saved = null; try{ saved = localStorage.getItem('castlens-lang'); }catch(e){}
+  var lang = q || saved || ((navigator.language||'en').toLowerCase().indexOf('zh')===0 ? 'zh' : 'en');
+  var META = {};
+  function apply(l){
+    lang = (l === 'zh') ? 'zh' : 'en';
+    document.documentElement.lang = lang;
+    document.title = META.title[lang];
+    var md = document.querySelector('meta[name="description"]');
+    if (md) md.setAttribute('content', META.desc[lang]);
+    document.querySelectorAll('[data-zh]').forEach(function(el){
+      var cur = el.textContent, zh = el.getAttribute('data-zh');
+      if (lang === 'zh'){ el.setAttribute('data-en', cur); el.textContent = zh; }
+      else { var en = el.getAttribute('data-en'); if (en != null) el.textContent = en; }
+    });
+    var b = document.getElementById('langBtn');
+    if (b) b.textContent = (lang === 'en') ? '中文' : 'EN';
+    try{ localStorage.setItem('castlens-lang', lang); }catch(e){}
+    var u = new URL(location.href);
+    if (lang === 'zh') u.searchParams.set('lang','zh'); else u.searchParams.delete('lang');
+    history.replaceState(null, '', u);
+  }
+  window.__applyLang = apply;
+  document.getElementById('langBtn').addEventListener('click', function(){ apply(lang === 'en' ? 'zh' : 'en'); });
+  window.__setMeta = function(t, d){ META.title = t; META.desc = d; apply(q || saved || ((navigator.language||'en').toLowerCase().indexOf('zh')===0 ? 'zh' : 'en')); };
+})();
+__setMeta({ "en": "Private Screen Recorder — Nothing Leaves Your Device | CastLens", "zh": "私密录屏工具 — 画面不离设备 | CastLens" }, { "en": "A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.", "zh": "从架构上杜绝泄露的录屏工具：没有服务器、没有上传端点，文件从浏览器内存直接落盘。欢迎亲自验证。" });
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
+</body>
+</html>
