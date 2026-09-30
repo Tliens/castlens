@@ -296,6 +296,7 @@ const L = {
     toastEmbed:'Screen capture isn\'t available in this browser or embedded webview (e.g. an in-app browser). Open CastLens in a standalone Chrome, Edge, or Safari window.',
     toastRecErr:'Recording hit an error and stopped. Try again — if it keeps happening, reload the page.',
     toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
+    toastEarly:'The capture was cut off by the system right after it started. If this repeats, allow Screen Recording for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then restart it.',
     howT:'How it works',
     s1t:'Choose what to capture', s1d:'Click Record, then pick a screen, an app window, or a Chrome tab in the browser prompt.',
     s2t:'Record with optional audio', s2d:'Toggle your microphone or system audio before you start. Pause and resume any time.',
@@ -334,6 +335,7 @@ const L = {
     toastEmbed:'当前环境不支持屏幕捕获（比如应用内置浏览器）。请用独立的 Chrome / Edge / Safari 窗口打开 CastLens 再录。',
     toastRecErr:'录制出现错误已停止，请重试；若反复出现请刷新页面。',
     toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
+    toastEarly:'录屏刚开始就被系统中断了。若反复出现，请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后重启浏览器。',
     howT:'使用方法',
     s1t:'选择录制对象', s1d:'点击开始录制，在浏览器弹窗里选择整个屏幕、某个应用窗口或某个标签页。',
     s2t:'按需开启声音', s2d:'开始前可打开麦克风或系统声音，录制中随时暂停、继续。',
@@ -426,7 +428,14 @@ const S = {
   rec:null, chunks:[], screen:null, mic:null, actx:null,
   t0:0, pausedAcc:0, pausedAt:0, tick:null,
   blob:null, url:null, mime:null, ext:'mp4', finalDur:0,
+  stopReason:null, log:[],
 };
+function dlog(ev, detail){
+  const e = { t: Math.round(performance.now()) / 1000, ev };
+  if (detail != null) e.d = detail;
+  S.log.push(e);
+  if (S.log.length > 300) S.log.shift();
+}
 const els = { rec:$('btnRecord'), pause:$('btnPause'), stop:$('btnStop'), timer:$('timer'), st:$('stLabel'), hint:$('hint'),
               review:$('review'), preview:$('preview'), meta:$('rvMeta'), save:$('btnSave'), discard:$('btnDiscard') };
 
@@ -474,20 +483,24 @@ function cleanupStreams(){
 async function startFlow(){
   const mime = pickMime();
   if (!mime){ toast(L[LANG].unsupported); return; }
+  S.stopReason = null; S.log.length = 0;
+  dlog('start', { mime: mime.mime });
   els.rec.disabled = true;
   try {
     if ($('optMic').checked){
-      try { S.mic = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } }); }
-      catch(e){ toast(L[LANG].toastMicFail); }
+      try { S.mic = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } }); dlog('mic-ok'); }
+      catch(e){ dlog('mic-fail', e && e.name); toast(L[LANG].toastMicFail); }
     }
     try {
       S.screen = await navigator.mediaDevices.getDisplayMedia({
         video:{ frameRate:30 },
         audio: $('optSys').checked
       });
+      dlog('gdm-ok', { video: S.screen.getVideoTracks().length, audio: S.screen.getAudioTracks().length });
     } catch(e){
-      cleanupStreams();
       const name = e && e.name, msg = (e && e.message) || '';
+      dlog('gdm-err', name + ': ' + msg);
+      cleanupStreams();
       if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
       else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
       else toast(msg || L[LANG].unsupported);
@@ -496,7 +509,8 @@ async function startFlow(){
     if ($('optSys').checked && S.screen.getAudioTracks().length === 0 && !S.mic) toast(L[LANG].toastNoSys);
 
     S.screen.getVideoTracks()[0].addEventListener('ended', () => {
-      if (S.state === 'recording' || S.state === 'paused') stopRecording();
+      dlog('track-ended', Math.round(elapsedSec() * 10) / 10);
+      if (S.state === 'recording' || S.state === 'paused'){ S.stopReason = 'track-ended'; stopRecording(); }
     });
 
     const audioTrack = buildAudioTrack();
@@ -506,9 +520,9 @@ async function startFlow(){
 
     S.chunks = []; S.mime = mime;
     S.rec = new MediaRecorder(stream, { mimeType: mime.mime, videoBitsPerSecond: 8000000 });
-    S.rec.ondataavailable = e => { if (e.data && e.data.size) S.chunks.push(e.data); };
+    S.rec.ondataavailable = e => { if (e.data && e.data.size){ S.chunks.push(e.data); dlog('chunk', e.data.size); } };
     S.rec.onstop = finalize;
-    S.rec.onerror = () => { toast(L[LANG].toastRecErr); stopRecording(); };
+    S.rec.onerror = () => { dlog('rec-error'); S.stopReason = 'error'; toast(L[LANG].toastRecErr); stopRecording(); };
 
     if ($('optCd').checked){
       setState('countdown'); els.st.textContent = L[LANG].stCount;
@@ -522,6 +536,7 @@ async function startFlow(){
     }
     S.t0 = performance.now(); S.pausedAcc = 0;
     S.rec.start(1000);
+    dlog('rec-start');
     setState('recording'); startTick();
   } finally {
     els.rec.disabled = false;
@@ -534,6 +549,8 @@ function pauseResume(){
 }
 
 function stopRecording(){
+  if (!S.stopReason) S.stopReason = 'user';
+  dlog('stop', S.stopReason);
   S.finalDur = elapsedSec();
   stopTick();
   if (S.rec && S.rec.state !== 'inactive'){ try{ S.rec.stop(); }catch(e){ finalize(); } }
@@ -544,7 +561,9 @@ function finalize(){
   cleanupStreams();
   stopTick();
   const blob = new Blob(S.chunks, { type: (S.rec && S.rec.mimeType) || S.mime.mime });
+  dlog('finalize', { reason: S.stopReason || 'user', size: blob.size, dur: Math.round(S.finalDur * 10) / 10 });
   if (!blob.size){ toast(L[LANG].toastEmpty); S.chunks = []; setState('idle'); return; }
+  if (S.stopReason === 'track-ended' && S.finalDur < 1.5) toast(L[LANG].toastEarly);
   setState('review');
   S.blob = blob;
   if (S.url) URL.revokeObjectURL(S.url);
@@ -582,6 +601,7 @@ window.addEventListener('beforeunload', e => {
 /* ============ init ============ */
 function init(){
   applyTheme();
+  document.addEventListener('visibilitychange', () => dlog('vis', document.visibilityState));
   const q = new URLSearchParams(location.search).get('lang');
   const saved = store.k;
   const nav = (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
@@ -598,7 +618,8 @@ function init(){
 init();
 
 /* debug handle for automated tests */
-window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; } };
+window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; },
+  diag(){ return { state: S.state, reason: S.stopReason, elapsed: S.state === 'recording' || S.state === 'paused' ? Math.round(elapsedSec()*10)/10 : S.finalDur, log: S.log.slice() }; } };
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
 </body>
