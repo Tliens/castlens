@@ -297,6 +297,7 @@ const L = {
     toastRecErr:'Recording hit an error and stopped. Try again — if it keeps happening, reload the page.',
     toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
     toastEarly:'The capture was cut off by the system right after it started. If this repeats, allow Screen Recording for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then restart it.',
+    toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
     howT:'How it works',
     s1t:'Choose what to capture', s1d:'Click Record, then pick a screen, an app window, or a Chrome tab in the browser prompt.',
     s2t:'Record with optional audio', s2d:'Toggle your microphone or system audio before you start. Pause and resume any time.',
@@ -336,6 +337,7 @@ const L = {
     toastRecErr:'录制出现错误已停止，请重试；若反复出现请刷新页面。',
     toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
     toastEarly:'录屏刚开始就被系统中断了。若反复出现，请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后重启浏览器。',
+    toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
     howT:'使用方法',
     s1t:'选择录制对象', s1d:'点击开始录制，在浏览器弹窗里选择整个屏幕、某个应用窗口或某个标签页。',
     s2t:'按需开启声音', s2d:'开始前可打开麦克风或系统声音，录制中随时暂停、继续。',
@@ -502,6 +504,7 @@ async function startFlow(){
       dlog('gdm-err', name + ': ' + msg);
       cleanupStreams();
       if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
+      else if (name === 'NotReadableError') toast(L[LANG].toastCapFail);
       else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
       else toast(msg || L[LANG].unsupported);
       return;
