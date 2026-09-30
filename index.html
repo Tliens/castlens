@@ -102,7 +102,8 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 .diagbtn:hover{color:var(--accent)}
 
 /* layout overlay (region + webcam) */
-#layout{position:fixed;inset:0;z-index:150;background:rgba(8,6,5,.92);display:flex;align-items:center;justify-content:center}
+#layout{position:fixed;inset:0;z-index:150;background:rgba(8,6,5,.92);display:flex;align-items:center;justify-content:center;padding:18px}
+.ly-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:96vw}
 #lyBox{position:relative;background:#000;box-shadow:0 12px 50px rgba(0,0,0,.5);touch-action:none}
 #lyVideo{display:block;width:100%;height:100%}
 #lySel{position:absolute;border:1.5px solid #e06a45;box-shadow:0 0 0 100000px rgba(0,0,0,.5);cursor:move;z-index:2}
@@ -114,11 +115,12 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 .hw{left:-8px;top:50%;margin-top:-7px;cursor:ew-resize}.he{right:-8px;top:50%;margin-top:-7px;cursor:ew-resize}
 #lyCam{position:absolute;width:120px;height:120px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.45);cursor:grab;z-index:4;background:#000}
 #lyCam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-#lyChips{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:5}
-#lyChips button{background:rgba(15,12,10,.8);color:#eee;border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:5px 14px;font-size:13px;cursor:pointer;backdrop-filter:blur(6px)}
+#lyBar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(15,12,10,.82);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;backdrop-filter:blur(6px);max-width:96vw}
+#lyChips{display:flex;gap:6px}
+#lyChips button{background:rgba(255,255,255,.06);color:#eee;border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:4px 11px;font-size:12.5px;cursor:pointer}
 #lyChips button:hover{border-color:#e06a45;color:#e06a45}
-#lyBar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:5;flex-wrap:wrap;justify-content:center}
-#lyTip{color:#d8cfc5;font-size:13.5px;background:rgba(15,12,10,.8);padding:8px 14px;border-radius:10px;backdrop-filter:blur(6px)}
+#lyTip{color:#cfc6bb;font-size:12.5px;max-width:430px;line-height:1.45}
+#lyBar .btn{padding:8px 16px;font-size:13.5px}
 /* trim */
 #trimBox{margin-top:16px}
 .trim-t{font-size:13.5px;color:var(--mut);margin:0 0 8px;display:flex;justify-content:space-between}
@@ -269,24 +271,26 @@ footer .cn{margin-bottom:6px}
     </div>
 
     <div id="layout" hidden>
-      <div id="lyBox">
-        <video id="lyVideo" muted playsinline></video>
-        <div id="lySel"><span id="lySize">0×0</span>
-          <i class="h hn"></i><i class="h hs"></i><i class="h hw"></i><i class="h he"></i>
-          <i class="h hnw"></i><i class="h hne"></i><i class="h hsw"></i><i class="h hse"></i>
+      <div class="ly-wrap">
+        <div id="lyBox">
+          <video id="lyVideo" muted playsinline></video>
+          <div id="lySel"><span id="lySize">0×0</span>
+            <i class="h hn"></i><i class="h hs"></i><i class="h hw"></i><i class="h he"></i>
+            <i class="h hnw"></i><i class="h hne"></i><i class="h hsw"></i><i class="h hse"></i>
+          </div>
+          <div id="lyCam" hidden><video id="lyCamV" muted playsinline></video></div>
         </div>
-        <div id="lyCam" hidden><video id="lyCamV" muted playsinline></video></div>
-      </div>
-      <div id="lyChips">
-        <button id="lyFull" type="button" data-i18n="lyFull">Full frame</button>
-        <button id="ly169" type="button">16:9</button>
-        <button id="ly43" type="button">4:3</button>
-        <button id="ly11" type="button">1:1</button>
-      </div>
-      <div id="lyBar">
-        <span id="lyTip" data-i18n="lyTip">Drag to draw the recording area; drag the circle to place your webcam.</span>
-        <button class="btn ghost" id="lyCancel" type="button" data-i18n="lyCancel">Cancel</button>
-        <button class="btn" id="lyGo" type="button" data-i18n="lyGo">Start recording</button>
+        <div id="lyBar">
+          <div id="lyChips">
+            <button id="lyFull" type="button" data-i18n="lyFull">Full frame</button>
+            <button id="ly169" type="button">16:9</button>
+            <button id="ly43" type="button">4:3</button>
+            <button id="ly11" type="button">1:1</button>
+          </div>
+          <span id="lyTip" data-i18n="lyTip">Drag to draw the recording area, drag the circle to place the webcam. After you click Start, switch to the target tab during the countdown.</span>
+          <button class="btn ghost" id="lyCancel" type="button" data-i18n="lyCancel">Cancel</button>
+          <button class="btn" id="lyGo" type="button" data-i18n="lyGo">Start recording</button>
+        </div>
       </div>
     </div>
   </section>
@@ -397,7 +401,7 @@ const L = {
     regionLabel:'Region', camLabel:'Webcam', stLayout:'Adjusting layout…',
     toastCamFail:'Webcam unavailable — recording without the camera overlay.',
     lyFull:'Full frame', lyCancel:'Cancel', lyGo:'Start recording',
-    lyTip:'Drag to draw the recording area; drag the circle to place your webcam; drag edges to resize.',
+    lyTip:'Drag to draw the area, drag the circle to place the webcam. Click Start, then switch to the target tab during the countdown.',
     trimTitle:'Trim', dlTrim:'Download (trimmed)', dlFull:'Download original',
     trimExporting:'Exporting', trimDone:'Trimmed video downloaded',
     trimErr:'Trim export failed — downloaded the original instead.',
@@ -460,7 +464,7 @@ const L = {
     regionLabel:'录制区域', camLabel:'摄像头画中画', stLayout:'调整画面布局…',
     toastCamFail:'摄像头不可用，将不含画中画。',
     lyFull:'整个画面', lyCancel:'取消', lyGo:'开始录制',
-    lyTip:'拖拽绘制录制区域；拖动圆形窗口调整摄像头位置；拖边缘调整大小。',
+    lyTip:'拖拽绘制录制区域，拖动圆窗放置摄像头；点「开始录制」后趁倒计时切到要录的标签页。',
     trimTitle:'裁剪', dlTrim:'下载（裁剪版）', dlFull:'下载完整原片',
     trimExporting:'导出中', trimDone:'裁剪版已下载',
     trimErr:'裁剪导出失败，已改为下载原片。',
@@ -664,7 +668,7 @@ function openLayout(){
     };
     const fit = () => {
       VW = vid.videoWidth || 1280; VH = vid.videoHeight || 720;
-      scale = Math.min((innerWidth - 56) / VW, (innerHeight - 170) / VH);
+      scale = Math.min(Math.min(innerWidth - 64, 960) / VW, (innerHeight * 0.56) / VH);
       scale = Math.max(0.05, Math.min(scale, 2));
       box.style.width = Math.round(VW * scale) + 'px';
       box.style.height = Math.round(VH * scale) + 'px';
@@ -794,18 +798,23 @@ async function startFlow(){
     }
     let audioToastShown = false;
     els.st.textContent = L[LANG].stPicking;
+    const wantLayout = $('optRegion').checked || $('optCam').checked;
+    let ctrl = null;
+    const gdm = async o => {
+      ctrl = (wantLayout && window.CaptureController) ? new CaptureController() : null;
+      const s = await navigator.mediaDevices.getDisplayMedia({ ...o, ...(ctrl ? { controller: ctrl } : {}) });
+      if (ctrl){ try{ ctrl.setFocusBehavior('no-focus'); dlog('focus-no'); }catch(e){ dlog('focus-err', e && e.name); } }
+      return s;
+    };
     try {
       try {
-        S.screen = await navigator.mediaDevices.getDisplayMedia({
-          video:{ frameRate:30 },
-          audio: $('optSys').checked
-        });
+        S.screen = await gdm({ video:{ frameRate:30 }, audio: $('optSys').checked });
         dlog('gdm-ok', { video: S.screen.getVideoTracks().length, audio: S.screen.getAudioTracks().length });
       } catch(eA){
         if ($('optSys').checked && eA && eA.name === 'NotReadableError'){
           dlog('gdm-retry-noaudio');
           els.st.textContent = L[LANG].stPicking;
-          S.screen = await navigator.mediaDevices.getDisplayMedia({ video:{ frameRate:30 } });
+          S.screen = await gdm({ video:{ frameRate:30 } });
           toast(L[LANG].toastAudioRetry); audioToastShown = true;
           dlog('gdm-ok-noaudio');
         } else throw eA;
@@ -880,9 +889,10 @@ async function startFlow(){
       setState('countdown'); els.st.textContent = L[LANG].stCount;
       const ov = $('cd'), num = $('cdNum');
       ov.hidden = false;
-      for (const n of [3,2,1]){
+      const seq = S.layout ? [5,4,3,2,1] : [3,2,1];
+      for (const n of seq){
         num.textContent = n;
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, S.layout ? 700 : 800));
       }
       ov.hidden = true;
     }
