@@ -214,6 +214,7 @@ footer .cn{margin-bottom:6px}
         <div class="pc-btns">
           <a class="btn" id="pcOpen" href="x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" data-i18n="btnPermSet">Open System Settings</a>
           <button class="btn ghost" id="pcRe" data-i18n="btnPermRe">I've enabled it — test again</button>
+          <button class="btn ghost" id="pcDiag" data-i18n="btnPermDiag">Copy diagnostics</button>
         </div>
       </div>
     </div>
@@ -327,6 +328,9 @@ const L = {
     toastRecErr:'Recording hit an error and stopped. Try again — if it keeps happening, reload the page.',
     toastEmpty:'Nothing was captured — make sure this browser has Screen Recording permission (macOS: System Settings → Privacy & Security → Screen Recording).',
     toastEarly:'The capture was cut off by the system right after it started. If this repeats, allow Screen Recording for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then restart it.',
+    toastAudioRetry:'Capturing with system audio failed — restarted the capture without audio. Uncheck "System audio" beforehand to skip this.',
+    btnPermDiag:'Copy diagnostics',
+    diagCopied:'Diagnostics copied — just paste it to support.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
     pcT:'Screen Recording permission is off',
     pcD:'macOS grants screen capture to the browser app itself — and asks only once. If that prompt was missed, recording fails silently. Fix it in three steps:',
@@ -378,6 +382,9 @@ const L = {
     toastRecErr:'录制出现错误已停止，请重试；若反复出现请刷新页面。',
     toastEmpty:'没有录到任何画面——请确认本浏览器已获「屏幕录制」权限（macOS：系统设置 → 隐私与安全性 → 屏幕录制）。',
     toastEarly:'录屏刚开始就被系统中断了。若反复出现，请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后重启浏览器。',
+    toastAudioRetry:'带系统声音的捕获失败，已自动改为无声录制。下次可先取消勾选「系统声音」。',
+    btnPermDiag:'复制诊断信息',
+    diagCopied:'诊断信息已复制，直接粘贴给支持即可。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
     pcT:'「屏幕录制」权限未开启',
     pcD:'macOS 把屏幕捕获权限授给浏览器应用本身，而且只提示一次——错过就再也不弹，失败是静默的。三步修复：',
@@ -545,12 +552,22 @@ async function startFlow(){
       try { S.mic = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } }); dlog('mic-ok'); }
       catch(e){ dlog('mic-fail', e && e.name); toast(L[LANG].toastMicFail); }
     }
+    let audioToastShown = false;
     try {
-      S.screen = await navigator.mediaDevices.getDisplayMedia({
-        video:{ frameRate:30 },
-        audio: $('optSys').checked
-      });
-      dlog('gdm-ok', { video: S.screen.getVideoTracks().length, audio: S.screen.getAudioTracks().length });
+      try {
+        S.screen = await navigator.mediaDevices.getDisplayMedia({
+          video:{ frameRate:30 },
+          audio: $('optSys').checked
+        });
+        dlog('gdm-ok', { video: S.screen.getVideoTracks().length, audio: S.screen.getAudioTracks().length });
+      } catch(eA){
+        if ($('optSys').checked && eA && eA.name === 'NotReadableError'){
+          dlog('gdm-retry-noaudio');
+          S.screen = await navigator.mediaDevices.getDisplayMedia({ video:{ frameRate:30 } });
+          toast(L[LANG].toastAudioRetry); audioToastShown = true;
+          dlog('gdm-ok-noaudio');
+        } else throw eA;
+      }
       hidePermCard();
     } catch(e){
       const name = e && e.name, msg = (e && e.message) || '';
@@ -562,7 +579,7 @@ async function startFlow(){
       else toast(msg || L[LANG].unsupported);
       return;
     }
-    if ($('optSys').checked && S.screen.getAudioTracks().length === 0 && !S.mic) toast(L[LANG].toastNoSys);
+    if (!audioToastShown && $('optSys').checked && S.screen.getAudioTracks().length === 0 && !S.mic) toast(L[LANG].toastNoSys);
 
     S.screen.getVideoTracks()[0].addEventListener('ended', () => {
       dlog('track-ended', Math.round(elapsedSec() * 10) / 10);
@@ -658,6 +675,18 @@ function showPermCard(){
 }
 function hidePermCard(){ $('permCard').hidden = true; }
 $('pcX').onclick = hidePermCard;
+$('pcDiag').onclick = async () => {
+  const payload = JSON.stringify({ href: location.href, ua: navigator.userAgent, lang: LANG, ...(window.__CL.diag ? window.__CL.diag() : {}) }, null, 1);
+  let done = false;
+  try { await navigator.clipboard.writeText(payload); done = true; } catch(e){}
+  if (!done){
+    const ta = document.createElement('textarea');
+    ta.value = payload; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done = true; } catch(e){}
+    ta.remove();
+  }
+  toast(done ? L[LANG].diagCopied : payload);
+};
 $('permCard').addEventListener('click', e => { if (e.target === $('permCard')) hidePermCard(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('permCard').hidden) hidePermCard(); });
 $('pcRe').onclick = async () => {
