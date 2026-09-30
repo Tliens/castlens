@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://castlens.kuige.me/sitemap.xml
