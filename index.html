@@ -576,7 +576,7 @@ const S = {
   t0:0, pausedAcc:0, pausedAt:0, tick:null,
   blob:null, url:null, mime:null, ext:'mp4', finalDur:0,
   stopReason:null, log:[], downgraded:false, finalizeDone:false,
-  cam:null, layout:null, drawT:null, pipe:null, camPipe:null, cv:null, cvCtx:null, cvStream:null, camPos:{x:.82,y:.82},
+  cam:null, layout:null, drawT:null, pipe:null, camPipe:null, cv:null, cvCtx:null, cvStream:null, camPos:{x:.82,y:.82}, pipWin:null,
 };
 function dlog(ev, detail){
   const e = { t: Math.round(performance.now()) / 1000, ev };
@@ -627,11 +627,188 @@ function cleanupStreams(){
   stopCanvasPipe();
   for (const st of [S.screen, S.mic, S.cam]) if (st) st.getTracks().forEach(t => t.stop());
   if (S.actx) { try{ S.actx.close(); }catch(e){} }
+  if (S.pipWin){ try{ S.pipWin.close(); }catch(e){} S.pipWin = null; }
   S.screen = S.mic = S.actx = S.cam = null;
 }
 
 /* ---- layout overlay: region selection + webcam placement ---- */
+function openPipWindow(){
+  return (async () => {
+    if (!window.documentPictureInPicture) return null;
+    try {
+      const w = await documentPictureInPicture.requestWindow({ width: 470, height: 350 });
+      try { w.document.body.style.background = '#141210'; } catch(e){}
+      return w;
+    }
+    catch(e){ dlog('pip-err', e && e.name); return null; }
+  })();
+}
 function openLayout(){
+  if (S.pipWin && !S.pipWin.closed) return buildLayoutInPip(S.pipWin);
+  S.pipWin = null;
+  return openLayoutInline();
+}
+/* always-on-top PIP selector: user stays on the tab being recorded */
+function buildLayoutInPip(pw){
+  return new Promise(resolve => {
+    let done = false;
+    const finish = val => {
+      if (done) return; done = true;
+      try { clearInterval(drawT); } catch(e){}
+      try { pw.close(); } catch(e){}
+      resolve(val);
+    };
+    const d = pw.document;
+    d.body.innerHTML = '';
+    const st = d.createElement('style');
+    st.textContent = `body{margin:0;background:#141210;color:#f0e8dd;font-family:-apple-system,'PingFang SC',sans-serif;user-select:none;overflow:hidden}
+.t{font-size:12px;color:#cfc6bb;padding:8px 12px 4px;line-height:1.4}
+#cv{display:block;touch-action:none;cursor:crosshair;background:#000;margin:0 auto}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px}
+.chip{background:rgba(255,255,255,.06);color:#eee;border:1px solid rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;font-size:11.5px;cursor:pointer}
+.chip:hover{border-color:#e06a45;color:#e06a45}
+.sp{flex:1}
+button.b{border:none;border-radius:9px;padding:7px 14px;font-size:12.5px;cursor:pointer;color:#fff;background:#bc4b2c}
+button.g{background:none;border:1px solid rgba(255,255,255,.25);color:#cfc6bb}`;
+    d.head.appendChild(st);
+    const tip = d.createElement('div'); tip.className = 't'; tip.textContent = L[LANG].lyTip;
+    const cv = d.createElement('canvas');
+    const row = d.createElement('div'); row.className = 'row';
+    const mk = (txt, cls, fn) => { const b = d.createElement('button'); b.className = cls; b.textContent = txt; b.onclick = fn; return b; };
+    row.append(
+      mk(L[LANG].lyFull, 'chip', () => preset(VW / VH)),
+      mk('16:9', 'chip', () => preset(16/9)),
+      mk('4:3', 'chip', () => preset(4/3)),
+      mk('1:1', 'chip', () => preset(1)),
+      Object.assign(d.createElement('i'), { className: 'sp' }),
+      mk(L[LANG].lyCancel, 'b g', () => finish(null)),
+      mk(L[LANG].lyGo, 'b', () => { if (R) finish({ sx: R.x, sy: R.y, sw: R.w, sh: R.h }); }),
+    );
+    const lbl = d.createElement('div'); lbl.className = 't';
+    d.body.append(tip, cv, row, lbl);
+    const v = d.createElement('video');
+    v.muted = true; v.autoplay = true; v.playsInline = true; v.style.display = 'none';
+    v.srcObject = new MediaStream(S.screen.getVideoTracks());
+    d.body.appendChild(v);
+    let camV = null;
+    const camOn = !!(S.cam && S.cam.getVideoTracks().length);
+    if (camOn){
+      camV = d.createElement('video'); camV.muted = true; camV.autoplay = true; camV.playsInline = true; camV.style.display = 'none';
+      camV.srcObject = new MediaStream(S.cam.getVideoTracks());
+      d.body.appendChild(camV);
+    }
+    const g = cv.getContext('2d');
+    let VW = 1280, VH = 720, k = 1, R = null, drag = null;
+    const camR = () => Math.max(96, Math.round((R ? R.w : VW) * 0.18));
+    const clampSel = (x, y, w, h) => {
+      w = Math.max(64, Math.round(Math.min(w, VW))); h = Math.max(64, Math.round(Math.min(h, VH)));
+      x = Math.max(0, Math.round(Math.min(x, VW - w))); y = Math.max(0, Math.round(Math.min(y, VH - h)));
+      R = { x, y, w, h };
+      lbl.textContent = w + ' × ' + h;
+    };
+    const preset = ar => { let w = VW, h = w / ar; if (h > VH){ h = VH; w = h * ar; } clampSel((VW - w)/2, (VH - h)/2, w, h); };
+    const fit = () => {
+      VW = v.videoWidth || 1280; VH = v.videoHeight || 720;
+      const w = Math.min(440, pw.innerWidth - 16);
+      k = w / VW;
+      cv.width = Math.round(VW * k); cv.height = Math.round(VH * k);
+      cv.style.width = cv.width + 'px';
+      if (!R) clampSel(0, 0, VW, VH); else clampSel(R.x, R.y, R.w, R.h);
+    };
+    const rel = e => { const b = cv.getBoundingClientRect(); return { x: (e.clientX - b.left) / k, y: (e.clientY - b.top) / k }; };
+    cv.addEventListener('pointerdown', e => {
+      const p = rel(e);
+      if (camOn){
+        const cx = R.x + S.camPos.x * R.w, cy = R.y + S.camPos.y * R.h, r = camR();
+        if (Math.hypot(p.x - cx, p.y - cy) <= r){ drag = { mode:'cam', dx: p.x - cx, dy: p.y - cy }; }
+      }
+      if (!drag){
+        const t = 12 / k;
+        const near = (px, py) => Math.abs(p.x - px) < t && Math.abs(p.y - py) < t;
+        let dir = '';
+        if (near(R.x, R.y)) dir = 'nw'; else if (near(R.x + R.w, R.y)) dir = 'ne';
+        else if (near(R.x, R.y + R.h)) dir = 'sw'; else if (near(R.x + R.w, R.y + R.h)) dir = 'se';
+        else if (Math.abs(p.x - (R.x + R.w/2)) < t && Math.abs(p.y - R.y) < 6/k) dir = 'n';
+        else if (Math.abs(p.x - (R.x + R.w/2)) < t && Math.abs(p.y - (R.y + R.h)) < 6/k) dir = 's';
+        else if (Math.abs(p.y - (R.y + R.h/2)) < t && Math.abs(p.x - R.x) < 6/k) dir = 'w';
+        else if (Math.abs(p.y - (R.y + R.h/2)) < t && Math.abs(p.x - (R.x + R.w)) < 6/k) dir = 'e';
+        if (dir){ drag = { mode:'resize', dir, orig: { ...R }, p0: p }; }
+      }
+      if (!drag){
+        if (p.x > R.x && p.x < R.x + R.w && p.y > R.y && p.y < R.y + R.h) drag = { mode:'move', orig: { ...R }, p0: p };
+        else { drag = { mode:'draw', o: p }; clampSel(p.x, p.y, 1, 1); }
+      }
+      try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+      e.preventDefault();
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!drag || done) return;
+      const p = rel(e), dg = drag;
+      if (dg.mode === 'cam'){
+        S.camPos.x = Math.max(.12, Math.min(.88, (p.x - dg.dx - R.x) / R.w));
+        S.camPos.y = Math.max(.15, Math.min(.85, (p.y - dg.dy - R.y) / R.h));
+      } else if (dg.mode === 'move'){
+        clampSel(dg.orig.x + (p.x - dg.p0.x), dg.orig.y + (p.y - dg.p0.y), dg.orig.w, dg.orig.h);
+      } else if (dg.mode === 'draw'){
+        clampSel(Math.min(dg.o.x, p.x), Math.min(dg.o.y, p.y), Math.abs(p.x - dg.o.x), Math.abs(p.y - dg.o.y));
+      } else {
+        let { x, y, w, h } = dg.orig; const dx = p.x - dg.p0.x, dy = p.y - dg.p0.y, dir = dg.dir;
+        if (dir.includes('e')) w = dg.orig.w + dx;
+        if (dir.includes('s')) h = dg.orig.h + dy;
+        if (dir.includes('w')){ x = dg.orig.x + dx; w = dg.orig.w - dx; }
+        if (dir.includes('n')){ y = dg.orig.y + dy; h = dg.orig.h - dy; }
+        if (w < 64){ if (dir.includes('w')) x = dg.orig.x + dg.orig.w - 64; w = 64; }
+        if (h < 64){ if (dir.includes('n')) y = dg.orig.y + dg.orig.h - 64; h = 64; }
+        clampSel(x, y, w, h);
+      }
+    });
+    const endDrag = () => { drag = null; };
+    cv.addEventListener('pointerup', endDrag);
+    cv.addEventListener('pointercancel', endDrag);
+    const draw = () => {
+      try{
+        g.drawImage(v, 0, 0, cv.width, cv.height);
+        g.fillStyle = 'rgba(0,0,0,.55)';
+        g.fillRect(0, 0, cv.width, Math.max(0, R.y * k));
+        g.fillRect(0, (R.y + R.h) * k, cv.width, Math.max(0, cv.height - (R.y + R.h) * k));
+        g.fillRect(0, R.y * k, Math.max(0, R.x * k), R.h * k);
+        g.fillRect((R.x + R.w) * k, R.y * k, Math.max(0, cv.width - (R.x + R.w) * k), R.h * k);
+        g.strokeStyle = '#e06a45'; g.lineWidth = 1.5;
+        g.strokeRect(R.x * k, R.y * k, R.w * k, R.h * k);
+        g.fillStyle = '#fff';
+        for (const [hx, hy] of [[R.x,R.y],[R.x+R.w,R.y],[R.x,R.y+R.h],[R.x+R.w,R.y+R.h]])
+          g.fillRect(hx * k - 3, hy * k - 3, 6, 6);
+        const tag = R.w + '×' + R.h;
+        g.font = '11px sans-serif';
+        const tw = g.measureText(tag).width + 10;
+        g.fillStyle = '#e06a45'; g.fillRect(R.x * k, Math.max(0, R.y * k - 17), tw, 15);
+        g.fillStyle = '#fff'; g.fillText(tag, R.x * k + 5, Math.max(11, R.y * k - 6));
+        if (camV && camV.videoWidth){
+          const r = camR() * k;
+          const cx = (R.x + S.camPos.x * R.w) * k, cy = (R.y + S.camPos.y * R.h) * k;
+          g.save();
+          g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.clip();
+          g.fillStyle = '#000'; g.fillRect(cx - r, cy - r, r * 2, r * 2);
+          const s = Math.max(2 * r / camV.videoWidth, 2 * r / camV.videoHeight);
+          const dw = camV.videoWidth * s, dh = camV.videoHeight * s;
+          g.translate(cx, cy); g.scale(-1, 1);
+          g.drawImage(camV, -dw / 2, -dh / 2, dw, dh);
+          g.restore();
+          g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
+          g.lineWidth = 2.5; g.strokeStyle = 'rgba(255,255,255,.92)'; g.stroke();
+        }
+      }catch(e){}
+    };
+    const drawT = setInterval(draw, 33);
+    v.play().catch(()=>{});
+    if (camV) camV.play().catch(()=>{});
+    pw.addEventListener('pagehide', () => finish(null), { once:true });
+    if (v.readyState >= 1) fit(); else v.addEventListener('loadedmetadata', fit, { once:true });
+    dlog('pip-ui');
+  });
+}
+/* in-tab overlay fallback (no Document PiP support) */
+function openLayoutInline(){
   return new Promise(resolve => {
     const ov = $('layout'), box = $('lyBox'), vid = $('lyVideo'),
           sel = $('lySel'), size = $('lySize'), camEl = $('lyCam'), camV = $('lyCamV');
@@ -806,6 +983,7 @@ async function startFlow(){
       if (ctrl){ try{ ctrl.setFocusBehavior('no-focus'); dlog('focus-no'); }catch(e){ dlog('focus-err', e && e.name); } }
       return s;
     };
+    if (wantLayout){ S.pipWin = await openPipWindow(); dlog('pip', S.pipWin ? 1 : 0); }
     try {
       try {
         S.screen = await gdm({ video:{ frameRate:30 }, audio: $('optSys').checked });
