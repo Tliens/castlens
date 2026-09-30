@@ -97,14 +97,16 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 #timer{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;letter-spacing:1px}
 #stLabel{font-size:13px;color:var(--mut)}
 .hint{text-align:center;color:var(--mut);font-size:13.5px;margin:10px 0 0;min-height:20px}
-/* permission guide card */
-.permcard{margin-top:18px;border:1.5px solid var(--accent);border-radius:14px;padding:16px 40px 16px 18px;background:var(--card);position:relative;box-shadow:0 8px 26px var(--glow)}
-.pc-t{font-weight:700;font-size:15.5px;color:var(--accent);margin-bottom:4px}
-.pc-d{color:var(--mut);font-size:13.5px;margin:5px 0}
-.pc-steps{margin:8px 0 12px;padding-left:20px;color:var(--ink);font-size:14px}
-.pc-steps li{margin:3px 0}
+/* permission modal */
+.pcm{position:fixed;inset:0;background:rgba(10,8,6,.66);backdrop-filter:blur(3px);z-index:140;display:flex;align-items:center;justify-content:center;padding:20px}
+.pcm-box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px 22px;max-width:460px;width:100%;box-shadow:0 18px 60px rgba(0,0,0,.35);position:relative}
+.pcm-box .mxf-x{font-size:22px;top:10px;right:12px}
+.pc-t{font-weight:700;font-size:17px;color:var(--accent);margin-bottom:6px}
+.pc-d{color:var(--mut);font-size:14px;margin:6px 0}
+.pc-steps{margin:10px 0 16px;padding-left:20px;color:var(--ink);font-size:14.5px}
+.pc-steps li{margin:4px 0}
 .pc-btns{display:flex;gap:10px;flex-wrap:wrap}
-.pc-btns .btn{padding:9px 18px;font-size:14px;display:inline-block;text-decoration:none}
+.pc-btns .btn{padding:11px 20px;font-size:14.5px;display:inline-block;text-decoration:none}
 /* review */
 #review{margin-top:20px;border-top:1px solid var(--line);padding-top:20px}
 #preview{width:100%;max-height:340px;border-radius:10px;background:#000;display:block;margin:0 auto 14px}
@@ -198,19 +200,21 @@ footer .cn{margin-bottom:6px}
     </div>
     <p class="hint" id="hint" data-i18n="hintIdle">Click Record — you'll pick a screen, window, or tab in the browser prompt.</p>
 
-    <div id="permCard" class="permcard" hidden>
-      <button class="mxf-x" id="pcX" aria-label="Close">×</button>
-      <div class="pc-t" data-i18n="pcT">Screen Recording permission is off</div>
-      <p class="pc-d" data-i18n="pcD">macOS grants screen capture to the browser app itself — and asks only once. If that prompt was missed, recording fails silently. Fix it in three steps:</p>
-      <ol class="pc-steps" id="pcMac">
-        <li data-i18n="pcS1">Click "Open System Settings" below and select Screen Recording.</li>
-        <li data-i18n="pcS2">Turn on your browser — if it's already on, switch it off and on again.</li>
-        <li data-i18n="pcS3">Fully quit the browser (⌘Q) and reopen this page.</li>
-      </ol>
-      <p class="pc-d" id="pcOther" data-i18n="pcOther" hidden>On Windows no OS-level permission is needed: update your browser and retry, and check that no other capture software is holding the screen.</p>
-      <div class="pc-btns">
-        <a class="btn" id="pcOpen" href="x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" data-i18n="btnPermSet">Open System Settings</a>
-        <button class="btn ghost" id="pcRe" data-i18n="btnPermRe">I've enabled it — test again</button>
+    <div id="permCard" class="pcm" hidden>
+      <div class="pcm-box" role="dialog" aria-modal="true" aria-labelledby="pcTitle">
+        <button class="mxf-x" id="pcX" aria-label="Close">×</button>
+        <div class="pc-t" id="pcTitle" data-i18n="pcT">Screen Recording permission is off</div>
+        <p class="pc-d" data-i18n="pcD">macOS grants screen capture to the browser app itself — and asks only once. If that prompt was missed, recording fails silently. Fix it in three steps:</p>
+        <ol class="pc-steps" id="pcMac">
+          <li data-i18n="pcS1">Click "Open System Settings" below and select Screen Recording.</li>
+          <li data-i18n="pcS2">Turn on your browser — if it's already on, switch it off and on again.</li>
+          <li data-i18n="pcS3">Fully quit the browser (⌘Q) and reopen this page.</li>
+        </ol>
+        <p class="pc-d" id="pcOther" data-i18n="pcOther" hidden>On Windows no OS-level permission is needed: update your browser and retry, and check that no other capture software is holding the screen.</p>
+        <div class="pc-btns">
+          <a class="btn" id="pcOpen" href="x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" data-i18n="btnPermSet">Open System Settings</a>
+          <button class="btn ghost" id="pcRe" data-i18n="btnPermRe">I've enabled it — test again</button>
+        </div>
       </div>
     </div>
 
@@ -553,7 +557,7 @@ async function startFlow(){
       dlog('gdm-err', name + ': ' + msg);
       cleanupStreams();
       if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
-      else if (name === 'NotReadableError'){ toast(L[LANG].toastCapFail); showPermCard(); }
+      else if (name === 'NotReadableError'){ showPermCard(); }
       else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
       else toast(msg || L[LANG].unsupported);
       return;
@@ -654,6 +658,8 @@ function showPermCard(){
 }
 function hidePermCard(){ $('permCard').hidden = true; }
 $('pcX').onclick = hidePermCard;
+$('permCard').addEventListener('click', e => { if (e.target === $('permCard')) hidePermCard(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('permCard').hidden) hidePermCard(); });
 $('pcRe').onclick = async () => {
   try {
     const st = await navigator.mediaDevices.getDisplayMedia({ video:{ frameRate:30 } });
