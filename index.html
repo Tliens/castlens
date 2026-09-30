@@ -669,7 +669,8 @@ $('pcRe').onclick = async () => {
     toast(L[LANG].pcOk);
   } catch(e){
     dlog('perm-retest-fail', e && e.name);
-    toast(e && e.name === 'NotAllowedError' ? L[LANG].toastCancel : L[LANG].toastCapFail);
+    const nm = e && e.name;
+    toast(nm === 'NotAllowedError' ? L[LANG].toastCancel : nm === 'NotSupportedError' ? L[LANG].toastEmbed : L[LANG].toastCapFail);
   }
 };
 
