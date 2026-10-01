@@ -456,6 +456,7 @@ const L = {
     pipHint:'Drag the top bar to move this window. After stopping, switch back to the CastLens tab to preview & download.',
     cdLab:'Get ready',
     pipDone:'Recording complete', pipView:'View & download', pipCloseBtn:'Close',
+    convTo:'Converting to MP4', dlMp4:'Download MP4', dlWebmOrig:'Original (WebM)', mp4Ready:'MP4 version ready — download below.',
     diagCopied:'Diagnostics copied — just paste it to support.',
     toastCapFail:'The browser couldn\'t start capturing the screen — most likely Screen Recording permission is off. Allow it for your browser (macOS: System Settings → Privacy & Security → Screen Recording), then fully quit and reopen the browser.',
     pcT:'Screen Recording permission is off',
@@ -529,6 +530,7 @@ const L = {
     pipHint:'拖动顶部标题栏可移动本窗。停止后切回 CastLens 标签页预览并下载。',
     cdLab:'准备开录',
     pipDone:'录制完成', pipView:'查看并下载', pipCloseBtn:'关闭',
+    convTo:'正在转为 MP4', dlMp4:'下载 MP4', dlWebmOrig:'原片 (WebM)', mp4Ready:'已转出 MP4，点下方按钮下载。',
     diagCopied:'诊断信息已复制，直接粘贴给支持即可。',
     toastCapFail:'浏览器无法启动屏幕捕获——通常是「屏幕录制」权限未开启。请在 系统设置 → 隐私与安全性 → 屏幕录制 中允许你的浏览器，然后完全退出并重新打开浏览器。',
     pcT:'「屏幕录制」权限未开启',
@@ -624,9 +626,10 @@ const CAND = [
 ];
 function pickMime(wantExt){
   if (!window.MediaRecorder) return null;
-  for (const [mime, ext, label] of CAND) {
+  for (let i = 0; i < CAND.length; i++){
+    const [mime, ext, label] = CAND[i];
     if (wantExt && ext !== wantExt) continue;
-    try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label }; } catch(e){} }
+    try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label, idx: i }; } catch(e){} }
   return null;
 }
 
@@ -1158,7 +1161,7 @@ function stopCanvasPipe(){
 async function startFlow(){
   const mime = pickMime();
   if (!mime){ toast(L[LANG].unsupported); return; }
-  S.stopReason = null; S.log.length = 0; S.downgraded = false; S.finalizeDone = false;
+  S.stopReason = null; S.log.length = 0; S.downgraded = false; S.finalizeDone = false; S.conv = null; S._webmToast = false;
   dlog('start', { mime: mime.mime });
   els.rec.disabled = true;
   try {
@@ -1234,21 +1237,26 @@ async function startFlow(){
       r.onstop = finalize;
       r.onerror = ev => {
         dlog('rec-error', ev && ev.error ? (ev.error.name + ': ' + (ev.error.message || '')).slice(0, 120) : 'unknown');
-        if (S.mime.ext === 'mp4' && S.chunks.length === 0 && !S.downgraded){
-          S.downgraded = true;
-          const fb = pickMime('webm');
-          if (fb){
-            dlog('downgrade-webm', fb.mime);
+        if (S.chunks.length === 0){
+          for (let j = S.mime.idx + 1; j < CAND.length; j++){
+            const [m, e2x, l2] = CAND[j];
+            let ok = false;
+            try { ok = MediaRecorder.isTypeSupported(m); } catch(e3){}
+            if (!ok) continue;
+            const nxt = { mime: m, ext: e2x, label: l2, idx: j };
+            const wasMp4 = S.mime.ext === 'mp4';
+            dlog('codec-retry', nxt.mime);
             try { r.onstop = null; r.stop(); } catch(e){}
-            S.rec = null; S.chunks = []; S.mime = fb;
-            $('fmtBadge').textContent = fb.label;
+            S.rec = null; S.chunks = []; S.mime = nxt; S.candIdx = j;
+            if (wasMp4 && nxt.ext === 'webm') S.downgraded = true;
+            $('fmtBadge').textContent = nxt.label;
             try {
-              S.rec = makeRec(fb);
+              S.rec = makeRec(nxt);
               S.rec.start(1000);
-              dlog('rec-start-webm');
-              toast(L[LANG].toastFbWebm);
+              dlog('rec-start', nxt.mime);
+              if (wasMp4 && nxt.ext === 'webm' && !S._webmToast){ S._webmToast = true; toast(L[LANG].toastFbWebm); }
               return;
-            } catch(e2){ dlog('fb-start-throw', e2 && e2.name); }
+            } catch(e4){ dlog('retry-start-throw', e4 && e4.name); }
           }
         }
         S.stopReason = 'error'; toast(L[LANG].toastRecErr); stopRecording();
@@ -1320,6 +1328,7 @@ function finalize(){
   els.meta.textContent = `${fmtDur(S.finalDur)} · ${fmtBytes(blob.size)} · ${S.mime.label}`;
   els.timer.textContent = fmtDur(S.finalDur);
   setupTrim();
+  if (S.mime.ext === 'webm') startConvert();
   const pd = S._pipDone; S._pipDone = null;
   if (pd){
     setTimeout(() => {
@@ -1335,7 +1344,7 @@ function finalize(){
 
 function discard(){
   if (S.pipWin){ try{ S.pipWin.close(); }catch(e){} S.pipWin = null; pipEls = null; }
-  S._pipDone = null;
+  S._pipDone = null; S.conv = null;
   $('trimBox').hidden = true; $('btnFull').hidden = true;
   if (S.url){ URL.revokeObjectURL(S.url); S.url = null; }
   els.preview.removeAttribute('src'); els.preview.load();
@@ -1401,8 +1410,7 @@ function renderTrim(){
   $('trimLen').textContent = fmtDur(TR.out - TR.in) + ' / ' + fmtDur(TR.dur);
 }
 function updTrimBtn(){
-  els.save.querySelector('span').textContent = TR.trimmed ? L[LANG].dlTrim : L[LANG].rvDownload;
-  $('btnFull').hidden = !TR.trimmed;
+  updConvUI();
 }
 
 const MB_SOURCES = ['./mb/mediabunny.min.mjs', 'https://cdn.jsdelivr.net/npm/mediabunny@1.61.0/dist/bundles/mediabunny.min.mjs', 'https://esm.sh/mediabunny@1.61.0'];
@@ -1415,87 +1423,142 @@ function loadMB(){
   return MBp;
 }
 
+/* unified decode→re-encode pipeline (mediabunny / WebCodecs).
+   opts: { trim:{in,out}|null, outExt:'mp4'|'webm', onPct } — MP4 preferred, WebM fallback. */
+async function transcode(srcBlob, opts){
+  const MB = await loadMB();
+  const { Input, ALL_FORMATS, BlobSource, VideoSampleSink, VideoSampleSource, VideoSample, Output, Mp4OutputFormat, WebMOutputFormat, BufferTarget, Quality,
+          getFirstEncodableVideoCodec, getFirstEncodableAudioCodec, AudioSampleSink, AudioSampleSource } = MB;
+  const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(srcBlob) });
+  const vTrack = await input.getPrimaryVideoTrack();
+  if (!vTrack || !(await vTrack.canDecode().catch(() => false))) throw new Error('cannot decode');
+  const aTrack = await input.getPrimaryAudioTrack().catch(() => null);
+  let fmt = null, vCodec = null, outExt = opts.outExt;
+  if (outExt !== 'webm'){
+    fmt = new Mp4OutputFormat({ fastStart: 'in-memory' });
+    vCodec = await getFirstEncodableVideoCodec(fmt.getSupportedVideoCodecs(), { width: vTrack.codedWidth, height: vTrack.codedHeight });
+    if (!vCodec){ fmt = null; dlog('mp4-enc-unavail'); }
+  }
+  if (!vCodec){
+    fmt = new WebMOutputFormat(); outExt = 'webm';
+    vCodec = await getFirstEncodableVideoCodec(fmt.getSupportedVideoCodecs(), { width: vTrack.codedWidth, height: vTrack.codedHeight });
+    if (!vCodec) throw new Error('no encoder');
+  }
+  const W = vTrack.codedWidth, H = vTrack.codedHeight;
+  const stats = await vTrack.computePacketStats(60).catch(() => null);
+  const fps = (stats && stats.averagePacketRate > 5 && stats.averagePacketRate < 240) ? stats.averagePacketRate : 30;
+  const bitrate = Math.min(18e6, Math.max(4e5, Math.round(W * H * fps * 0.1)));
+  const output = new Output({ format: fmt, target: new BufferTarget() });
+  const vSrc = new VideoSampleSource({ codec: vCodec, quality: new Quality({ bitrate }) });
+  output.addVideoTrack(vSrc);
+  const trim = opts.trim || null;
+  let audioP = Promise.resolve('none');
+  if (aTrack && await aTrack.canDecode().catch(() => false)){
+    try {
+      const aCodec = await getFirstEncodableAudioCodec(fmt.getSupportedAudioCodecs(), { numberOfChannels: aTrack.numberOfChannels, sampleRate: aTrack.sampleRate });
+      if (aCodec){
+        const aSrc = new AudioSampleSource({ codec: aCodec, bitrate: 128000 });
+        output.addAudioTrack(aSrc);
+        audioP = (async () => {
+          const sink = new AudioSampleSink(aTrack);
+          for await (const s of sink.samples()){
+            if (trim && (s.timestamp < trim.in - 0.02 || s.timestamp > trim.out + 0.02)){ s.close(); continue; }
+            if (trim){ try { s.setTimestamp(s.timestamp - trim.in); } catch(e){ s.close(); throw e; } }
+            await aSrc.add(s); s.close();
+          }
+          return 'ok';
+        })().catch(e => { dlog('audio-enc', e && e.message); return 'dropped'; });
+      }
+    } catch(e){ dlog('audio-setup', e && e.message); }
+  }
+  await output.start();
+  const sink = new VideoSampleSink(vTrack);
+  let n = 0;
+  const span0 = opts.outDur || 0;
+  for await (const s of sink.samples()){
+    if (trim && s.timestamp >= trim.out - 0.001){ s.close(); break; }
+    if (trim && s.timestamp < trim.in - 0.001){ s.close(); continue; }
+    if (trim){
+      try { s.setTimestamp(s.timestamp - trim.in); } catch(e){}
+      const dur = Math.max(0.001, Math.min(s.duration, trim.out - s.timestamp));
+      const cv = document.createElement('canvas'); cv.width = s.displayWidth || W; cv.height = s.displayHeight || H;
+      s.draw(cv.getContext('2d'), 0, 0, cv.width, cv.height);
+      const vs = new VideoSample(cv, { timestamp: s.timestamp, duration: dur });
+      await vSrc.add(vs); vs.close(); s.close(); n++;
+    } else {
+      await vSrc.add(s); s.close(); n++;
+    }
+    if (opts.onPct && span0 > 0 && n % 10 === 0){
+      const ref = trim ? trim.in : 0, span = trim ? Math.max(0.1, trim.out - trim.in) : Math.max(0.1, span0);
+      opts.onPct(Math.min(0.99, Math.max(0, (s.timestamp - ref) / span)));
+    }
+  }
+  await audioP;
+  await output.finalize();
+  const mime = outExt === 'mp4' ? 'video/mp4' : 'video/webm';
+  return { blob: new Blob([output.target.buffer], { type: mime }), ext: outExt, frames: n };
+}
+
+/* auto-convert WebM takes to MP4 right after recording */
+async function startConvert(){
+  if (S.conv && S.conv.status === 'running') return;
+  S.conv = { status: 'running', pct: 0 };
+  updConvUI();
+  try {
+    const res = await transcode(S.blob, { outExt: 'mp4', outDur: S.finalDur, onPct: p => { S.conv.pct = p; updConvUI(); } });
+    if (res.ext !== 'mp4') throw new Error('fallback webm');
+    const url = URL.createObjectURL(res.blob);
+    S.conv = { status: 'done', url, blob: res.blob, name: (S.filename || 'castlens.webm').replace(/\.webm$/, '.mp4') };
+    dlog('convert', { ok: true, frames: res.frames });
+    toast(L[LANG].mp4Ready);
+  } catch(e){
+    S.conv = { status: 'fail' };
+    dlog('convert', { ok: false, err: (e && e.message) || String(e) });
+  }
+  updConvUI();
+}
+function updConvUI(){
+  if (TR.trimmed) return;
+  const span = els.save.querySelector('span');
+  const c = S.conv;
+  if (c && c.status === 'running'){ els.save.disabled = true; span.textContent = L[LANG].convTo + ' ' + Math.round(c.pct * 100) + '%'; }
+  else {
+    els.save.disabled = false;
+    span.textContent = (c && c.status === 'done') ? L[LANG].dlMp4 : L[LANG].rvDownload;
+  }
+  const showOrig = TR.trimmed || (c && c.status === 'done');
+  $('btnFull').hidden = !showOrig;
+  if (showOrig) $('btnFull').textContent = TR.trimmed ? L[LANG].dlFull : L[LANG].dlWebmOrig;
+}
+
 async function exportTrim(){
   const btn = els.save, span = btn.querySelector('span');
   TR.exporting = true; btn.disabled = true;
   span.textContent = L[LANG].trimExporting + '…';
   try {
-    const MB = await loadMB();
-    const { Input, ALL_FORMATS, BlobSource, VideoSampleSink, VideoSampleSource, VideoSample, Output, Mp4OutputFormat, WebMOutputFormat, BufferTarget, Quality,
-            getFirstEncodableVideoCodec, getFirstEncodableAudioCodec, AudioSampleSink, AudioSampleSource } = MB;
-    const isMp4 = (S.blob.type || '').includes('mp4');
-    const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(S.blob) });
-    const vTrack = await input.getPrimaryVideoTrack();
-    if (!vTrack || !(await vTrack.canDecode().catch(() => false))) throw new Error('cannot decode');
-    const aTrack = await input.getPrimaryAudioTrack().catch(() => null);
-    const fmt = isMp4 ? new Mp4OutputFormat({ fastStart: 'in-memory' }) : new WebMOutputFormat();
-    const W = vTrack.codedWidth, H = vTrack.codedHeight;
-    const vCodec = await getFirstEncodableVideoCodec(fmt.getSupportedVideoCodecs(), { width: W, height: H });
-    if (!vCodec) throw new Error('no encoder');
-    const stats = await vTrack.computePacketStats(60).catch(() => null);
-    const fps = (stats && stats.averagePacketRate > 5 && stats.averagePacketRate < 240) ? stats.averagePacketRate : 30;
-    const bitrate = Math.min(18e6, Math.max(4e5, Math.round(W * H * fps * 0.1)));
-    const output = new Output({ format: fmt, target: new BufferTarget() });
-    const vSrc = new VideoSampleSource({ codec: vCodec, quality: new Quality({ bitrate }) });
-    output.addVideoTrack(vSrc);
-    let audioP = Promise.resolve('none');
-    if (aTrack && await aTrack.canDecode().catch(() => false)){
-      try {
-        const aCodec = await getFirstEncodableAudioCodec(fmt.getSupportedAudioCodecs(), { numberOfChannels: aTrack.numberOfChannels, sampleRate: aTrack.sampleRate });
-        if (aCodec){
-          const aSrc = new AudioSampleSource({ codec: aCodec, bitrate: 128000 });
-          output.addAudioTrack(aSrc);
-          audioP = (async () => {
-            const sink = new AudioSampleSink(aTrack);
-            for await (const s of sink.samples()){
-              if (s.timestamp < TR.in - 0.02 || s.timestamp > TR.out + 0.02){ s.close(); continue; }
-              try { s.timestamp -= TR.in; } catch(e){ s.close(); throw e; }
-              await aSrc.add(s); s.close();
-            }
-            return 'ok';
-          })();
-        }
-      } catch(e){ dlog('trim-audio-setup', e && e.message); }
-    }
-    await output.start();
-    const sink = new VideoSampleSink(vTrack);
-    const cv = document.createElement('canvas'); const cx = cv.getContext('2d');
-    let n = 0; const range = Math.max(0.1, TR.out - TR.in);
-    for await (const s of sink.samples()){
-      if (s.timestamp >= TR.out - 0.001){ s.close(); break; }
-      if (s.timestamp < TR.in - 0.001){ s.close(); continue; }
-      if (!cv.width){ cv.width = s.displayWidth || W; cv.height = s.displayHeight || H; }
-      s.draw(cx, 0, 0, cv.width, cv.height);
-      const dur = Math.max(0.001, Math.min(s.duration, TR.out - s.timestamp));
-      const vs = new VideoSample(cv, { timestamp: s.timestamp - TR.in, duration: dur });
-      await vSrc.add(vs); vs.close(); s.close(); n++;
-      if (n % 12 === 0){
-        span.textContent = L[LANG].trimExporting + ' ' + Math.round(Math.min(1, (s.timestamp - TR.in) / range) * 100) + '%';
-        await new Promise(r => setTimeout(r, 0));
-      }
-    }
-    await audioP;
-    await output.finalize();
-    const mime = isMp4 ? 'video/mp4' : 'video/webm';
-    const ext = isMp4 ? 'mp4' : 'webm';
-    const blob = new Blob([output.target.buffer], { type: mime });
-    const url = URL.createObjectURL(blob);
-    dl(url, (S.filename || ('castlens.' + ext)).replace(/\.[^.]+$/, '') + '-trim.' + ext);
+    const res = await transcode(S.blob, { trim: { in: TR.in, out: TR.out }, outExt: 'mp4', outDur: TR.dur,
+      onPct: p => { span.textContent = L[LANG].trimExporting + ' ' + Math.round(p * 100) + '%'; } });
+    const url = URL.createObjectURL(res.blob);
+    dl(url, (S.filename || ('castlens.' + res.ext)).replace(/\.[^.]+$/, '') + '-trim.' + res.ext);
     setTimeout(() => URL.revokeObjectURL(url), 60000);
-    dlog('trim-export', { ok: true, frames: n, tin: Math.round(TR.in * 10) / 10, tout: Math.round(TR.out * 10) / 10 });
+    dlog('trim-export', { ok: true, frames: res.frames, ext: res.ext, tin: Math.round(TR.in * 10) / 10, tout: Math.round(TR.out * 10) / 10 });
     toast(L[LANG].trimDone);
   } catch(e){
     dlog('trim-export', { ok: false, err: (e && e.message) || String(e) });
     toast(L[LANG].trimErr);
     if (S.url) dl(S.url, S.filename);
   } finally {
-    TR.exporting = false; btn.disabled = false; updTrimBtn();
+    TR.exporting = false; btn.disabled = false; updTrimBtn(); updConvUI();
   }
 }
 
 els.save.onclick = async () => {
   if (!S.url) return;
   if (TR.trimmed && !TR.exporting){ await exportTrim(); return; }
+  if (S.conv){
+    if (S.conv.status === 'running') return;
+    if (S.conv.status === 'done'){ dl(S.conv.url, S.conv.name); return; }
+  }
   dl(S.url, S.filename || ('castlens.' + S.mime.ext));
 };
 $('btnFull').onclick = () => { if (S.url) dl(S.url, S.filename); };
