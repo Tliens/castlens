@@ -131,6 +131,14 @@ h1{font-size:clamp(28px,5vw,42px);line-height:1.2;margin:0 0 14px;letter-spacing
 #trimIn{border-radius:6px 2px 2px 6px}#trimOut{border-radius:2px 6px 6px 2px}
 .trim-meta{font-size:12.5px;color:var(--mut);margin-top:6px;text-align:center}
 
+/* compat banner */
+.compat{display:flex;gap:9px;align-items:flex-start;padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:13px;line-height:1.55;border:1px solid}
+.compat .ic{flex:none;font-size:14px;line-height:1.4}
+.c-ok{background:rgba(46,125,79,.09);border-color:rgba(46,125,79,.35);color:var(--ok)}
+.c-warn{background:rgba(240,197,90,.10);border-color:rgba(201,162,39,.4);color:#8a6d1f}
+html.dark .c-warn{color:#d9b84a}
+.c-bad{background:rgba(188,75,44,.08);border-color:rgba(188,75,44,.4);color:var(--accent)}
+
 /* private by design */
 .pvcard{padding:28px;margin-top:6px;border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
 .pv-head{display:flex;gap:14px;align-items:center;margin-bottom:18px}
@@ -232,6 +240,7 @@ footer .guides a:hover{color:var(--accent)}
 
   <section id="tool" class="panel card" aria-label="Recorder">
     <div id="unsupported" hidden style="text-align:center;color:var(--accent);font-size:15px;padding:12px 0" data-i18n="unsupported">Your browser doesn't support screen recording. Please use desktop Chrome, Edge, Safari, or Firefox.</div>
+    <div id="compat" class="compat" hidden></div>
 
     <div class="opts" id="optsRow">
       <label class="sw"><input type="checkbox" id="optMic"><span class="sw-t"></span><span data-i18n="micLabel">Microphone</span></label>
@@ -427,6 +436,13 @@ const L = {
     pv4t:'Verify it yourself', pv4d:"Open DevTools → Network before you record and watch it stay silent. Don't take our word for it — check the packets.",
     sub:'Region capture, webcam picture-in-picture, pause & resume, one-tap trim, MP4 export — everything the desktop pros charge for, in a browser tab. Nothing installs. Nothing uploads. Possibly the world\'s second-best screen recorder — definitely the best one that opens in one click.',
     unsupported:"Your browser doesn't support screen recording. Please use desktop Chrome, Edge, Safari, or Firefox.",
+    compatOk:'Fully supported — region capture, webcam overlay, system audio and MP4 export all work in this browser.',
+    compatMacOld:'Recording works, but system audio needs Chrome 141+ on macOS. Sharing a Chrome tab always captures its sound.',
+    compatSafari:'Recording works and outputs MP4 (screen + microphone). For system audio and the full feature set, desktop Chrome is recommended.',
+    compatFirefox:'Recording works — saves WebM first, then automatically converts it to MP4 when possible.',
+    compatMobile:'Mobile browsers can\'t capture the screen. Please open CastLens in desktop Chrome, Edge, or Safari.',
+    compatInsecure:'Screen recording requires a secure (HTTPS) context.',
+    compatEmbed:'This embedded browser doesn\'t support screen capture. Open CastLens in a standalone Chrome, Edge, or Safari window.',
     micLabel:'Microphone', sysLabel:'System audio', cdLabel:'3s countdown',
     btnRecord:'Record', btnPause:'Pause', btnResume:'Resume', btnStop:'Stop',
     stIdle:'Ready', stRec:'Recording', stPause:'Paused', stCount:'Get ready',
@@ -501,6 +517,13 @@ const L = {
     pv4t:'欢迎亲自验证', pv4d:'录制前打开开发者工具的 Network 面板，看它保持安静。不用信我们的口头承诺，看数据包。',
     sub:'区域框选、摄像头画中画、暂停续录、一键裁剪、MP4 导出——桌面付费工具的本事，一个标签页全干了。不装软件，不上传云端。可能是世界第二好用的录屏工具——但一点开就能用的那个，就是它。',
     unsupported:'当前浏览器不支持屏幕录制，请使用桌面版 Chrome / Edge / Safari / Firefox。',
+    compatOk:'完整支持——区域录制、摄像头画中画、系统声音与 MP4 导出在此浏览器全部可用。',
+    compatMacOld:'可以录制，但系统声音需要 macOS 上的 Chrome 141+；共享 Chrome 标签页时标签页声音始终可录。',
+    compatSafari:'可以录制并输出 MP4（屏幕 + 麦克风）；系统声音等完整能力建议使用桌面版 Chrome。',
+    compatFirefox:'可以录制——先存 WebM，随后自动转为 MP4。',
+    compatMobile:'手机浏览器无法捕获屏幕，请用桌面版 Chrome / Edge / Safari 打开 CastLens。',
+    compatInsecure:'录屏需要 HTTPS 安全环境。',
+    compatEmbed:'当前是应用内置浏览器，不支持屏幕捕获。请用独立的 Chrome / Edge / Safari 窗口打开 CastLens。',
     micLabel:'麦克风', sysLabel:'系统声音', cdLabel:'3 秒倒计时',
     btnRecord:'开始录制', btnPause:'暂停', btnResume:'继续', btnStop:'停止',
     stIdle:'待命', stRec:'录制中', stPause:'已暂停', stCount:'准备',
@@ -575,6 +598,7 @@ function applyLang(lang){
   document.title = d.title;
   const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', d.desc);
   $('btnLang').textContent = LANG === 'en' ? '中文' : 'EN';
+  renderCompat();
   if (S.state === 'recording') setHint('hintRec'); else if (S.state === 'paused') setHint('hintPause');
   else if (S.state === 'review') setHint('hintReview'); else setHint('hintIdle');
   store.set(LANG);
@@ -632,6 +656,49 @@ function pickMime(wantExt){
     try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label, idx: i }; } catch(e){} }
   return null;
 }
+
+/* ============ compatibility banner ============ */
+const COMPAT_KEYS = {
+  ok:      ['compatOk', 'ok'],
+  macok:   ['compatOk', 'ok'],
+  macold:  ['compatMacOld', 'warn'],
+  safari:  ['compatSafari', 'warn'],
+  firefox: ['compatFirefox', 'warn'],
+  mobile:  ['compatMobile', 'bad'],
+  insecure:['compatInsecure', 'bad'],
+  embed:   ['compatEmbed', 'bad'],
+};
+let compatKey = null;
+function detectCompat(){
+  if (!window.isSecureContext) return 'insecure';
+  const ua = navigator.userAgent || '';
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /Android/i.test(ua);
+  if (ios || android) return 'mobile';
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || !window.MediaRecorder) return 'mobile';
+  const isMac = /Mac/i.test(ua);
+  const isFirefox = /firefox/i.test(ua);
+  const isSafari = /^((?!chrome|android|crios|fxios|edg).)*safari/i.test(ua);
+  const m = /(?:Chrome|Edg)\/(\d+)/.exec(ua);
+  const cv = m ? parseInt(m[1], 10) : 0;
+  if (isMac && isSafari) return 'safari';
+  if (isMac && cv && cv < 141) return 'macold';
+  if (isFirefox) return 'firefox';
+  return isMac ? 'macok' : 'ok';
+}
+function setCompat(key){
+  if (key) compatKey = key;
+  const box = $('compat');
+  if (!compatKey){ box.hidden = true; return; }
+  const def = COMPAT_KEYS[compatKey];
+  if (!def){ box.hidden = true; return; }
+  const [i18nKey, cls] = def;
+  const ico = cls === 'ok' ? '✓' : cls === 'warn' ? '⚠' : '✕';
+  box.className = 'compat c-' + cls;
+  box.innerHTML = '<span class="ic">' + ico + '</span><span data-cpt>' + L[LANG][i18nKey] + '</span>';
+  box.hidden = false;
+}
+function renderCompat(){ if (compatKey) setCompat(); }
 
 /* ============ recorder state ============ */
 const S = {
@@ -1200,7 +1267,7 @@ async function startFlow(){
       cleanupStreams();
       if (name === 'NotAllowedError' || name === 'AbortError') toast(L[LANG].toastCancel);
       else if (name === 'NotReadableError'){ showPermCard(); }
-      else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)) toast(L[LANG].toastEmbed);
+      else if (name === 'NotSupportedError' || /not supported|unsupported|can't|cannot/i.test(msg)){ toast(L[LANG].toastEmbed); setCompat('embed'); }
       else toast(msg || L[LANG].unsupported);
       return;
     }
@@ -1621,11 +1688,12 @@ function init(){
   } else {
     $('fmtBadge').textContent = mime.label;
   }
+  setCompat(detectCompat());
 }
 init();
 
 /* debug handle for automated tests */
-window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; }, TR, get S(){ return S; }, buildPipRecorderPanel, updatePipPanel, pauseResume, stopRecording, setTrim:(a,b)=>{ TR.in=a; TR.out=b; TR.trimmed=(TR.dur-(b-a))>0.05; renderTrim(); updTrimBtn(); },
+window.__CL = { get state(){ return S.state; }, pickMime, fmtDur, fmtBytes, L, get lang(){ return LANG; }, setCompat, detectCompat, TR, get S(){ return S; }, buildPipRecorderPanel, updatePipPanel, pauseResume, stopRecording, setTrim:(a,b)=>{ TR.in=a; TR.out=b; TR.trimmed=(TR.dur-(b-a))>0.05; renderTrim(); updTrimBtn(); },
   diag(){ return { state: S.state, reason: S.stopReason, elapsed: S.state === 'recording' || S.state === 'paused' ? Math.round(elapsedSec()*10)/10 : S.finalDur, log: S.log.slice() }; } };
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "948f2535a9dd4775a436c677b3c950e4"}'></script>
