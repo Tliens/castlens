@@ -18,7 +18,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Screen Recorder With Audio — Mic, System Sound, or Both | CastLens">
 <meta name="twitter:description" content="Record your screen with audio: microphone narration, system or tab sound, or both mixed together. Plain-English guide to what works on Windows, macOS and each browser.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Screen Recorder With Audio — Mic, System Sound, or Both | CastLens", "url": "https://castlens.kuige.me/screen-recorder-with-audio/", "description": "Record your screen with audio: microphone narration, system or tab sound, or both mixed together. Plain-English guide to what works on Windows, macOS and each browser.", "inLanguage": "en", "isPartOf": {"@type": "WebSite", "name": "CastLens", "url": "https://castlens.kuige.me/"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I record microphone and system audio at the same time?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — enable both switches before starting. Both sources are mixed into a single audio track in the exported file, with the microphone's echo cancellation on by default."}}, {"@type": "Question", "name": "Why can't I get system audio on my Mac?", "acceptedAnswer": {"@type": "Answer", "text": "Either the browser or macOS is older than Chrome 141 / macOS 14.2, or the picker's audio option wasn't enabled. Sharing a Chrome tab always captures the tab's sound regardless of versions — the reliable fallback."}}, {"@type": "Question", "name": "Which audio format does the recording use?", "acceptedAnswer": {"@type": "Answer", "text": "MP4 output carries AAC; WebM output carries Opus — both standard, accepted by every editor and platform. No exotic codecs, nothing to install."}}, {"@type": "Question", "name": "Can I remove audio or keep video only?", "acceptedAnswer": {"@type": "Answer", "text": "Simply leave both audio switches off before recording — you get a clean video-only file. Recording video-only also slightly reduces file size and CPU load."}}, {"@type": "Question", "name": "Does trimming affect the audio sync?", "acceptedAnswer": {"@type": "Answer", "text": "No. The built-in trimmer re-encodes video and audio on the same timeline, cutting both tracks at your chosen in/out points, so sync is preserved to the frame."}}]}</script>
 <style>:root{--bg:#faf6ee;--card:#fffdf8;--ink:#2b2320;--mut:#7a6f66;--accent:#bc4b2c;--line:rgba(43,35,32,.13)}
@@ -99,7 +100,6 @@ footer a{color:var(--mut)}
 </main>
 <footer>
   <div class="wrap">
-    <p class="cn">本站代号：画壁 — 壁上作画，画中人动；屏幕即画壁，帧帧入片。</p>
     <p><a href="/">CastLens</a> · © 2026 魁歌 KuiGe</p>
   </div>
 </footer>

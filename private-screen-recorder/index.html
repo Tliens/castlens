@@ -18,7 +18,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Private Screen Recorder — Nothing Leaves Your Device | CastLens">
 <meta name="twitter:description" content="A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231a1512'/%3E%3Crect x='12' y='16' width='40' height='28' rx='4' fill='none' stroke='%23e06a45' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='7' fill='%23e06a45'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Private Screen Recorder — Nothing Leaves Your Device | CastLens", "url": "https://castlens.kuige.me/private-screen-recorder/", "description": "A screen recorder built so recordings cannot leak: no server, no upload endpoint, files go from browser memory straight to your disk. Verify it yourself.", "inLanguage": "en", "isPartOf": {"@type": "WebSite", "name": "CastLens", "url": "https://castlens.kuige.me/"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does CastLens really never upload anything?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — it is a static page with no backend. The recording is produced and encoded inside your browser and saved directly by you. You can verify this with the browser's Network panel while recording."}}, {"@type": "Question", "name": "Can my employer or network admin see my recordings?", "acceptedAnswer": {"@type": "Answer", "text": "Not through CastLens — there is nothing to intercept because nothing is transmitted. What happens on a managed device is governed by your device policy (screen monitoring, disk encryption), which applies equally to any installed app."}}, {"@type": "Question", "name": "Does it work offline?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, after the page has loaded once. Recording, pausing, stopping, and saving all work with the network disconnected — which is itself proof that nothing is being uploaded."}}, {"@type": "Question", "name": "What happens to the video when I close the tab?", "acceptedAnswer": {"@type": "Answer", "text": "It's gone. The unsaved recording exists only in the tab's memory. Unless you pressed Download, no copy exists anywhere — on this site or any other."}}, {"@type": "Question", "name": "Is a browser recorder as private as an installed app?", "acceptedAnswer": {"@type": "Answer", "text": "For recording privacy, yes — both capture and encode locally. An installed app additionally works without loading a website first; a browser tool has the advantage of zero install and nothing left on the machine afterwards. Pick based on workflow, not privacy."}}]}</script>
 <style>:root{--bg:#faf6ee;--card:#fffdf8;--ink:#2b2320;--mut:#7a6f66;--accent:#bc4b2c;--line:rgba(43,35,32,.13)}
@@ -99,7 +100,6 @@ footer a{color:var(--mut)}
 </main>
 <footer>
   <div class="wrap">
-    <p class="cn">本站代号：画壁 — 壁上作画，画中人动；屏幕即画壁，帧帧入片。</p>
     <p><a href="/">CastLens</a> · © 2026 魁歌 KuiGe</p>
   </div>
 </footer>
